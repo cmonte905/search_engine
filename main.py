@@ -1,11 +1,18 @@
-<<<<<<< HEAD
 
-my_index = {:}
+import os
 
-=======
+corpus_dict = {}
+
 from jsonreader import read_corpus
->>>>>>> 3a5d39b193efdab3083f026fde727d44875216b5
 def main():
+	# The inverted index
+	index = []
+
+	import os
+	for file in os.listdir("/mydir"):
+    	if file.endswith(".txt"):
+        	print(os.path.join("/mydir", file))
+
 	print ('Enter name of the directory you wish to index')
 
 	user_input = input('Please enter something: ')
@@ -48,13 +55,14 @@ def input_parser(input):
 		print (q)
 
 # NaiveInvertedIndex---------------------------------------------------------
-corpus_dict = {}
+
+# corpus_dict at the top of page
 
 def add_term(term, documentID):
 	if (not term in corpus_dict):
-		l = []
-		l.append(documentID)
-		corpus_dict[term] = l
+		id_list = []
+		id_list.append(documentID)
+		corpus_dict[term] = id_list
 	elif (term in corpus_dict and (not documentID in corpus_dict[term])):
 		corpus_dict[term].append(documentID)
 
@@ -64,11 +72,14 @@ def term_count():
 def get_postings(term):
 	if (term in corpus_dict):
 		return corpus_dict[term]
-	return NULL
+	return []
 
 def get_dictionary():
-	words = []
-	for s in corpus_dict:
-		words.append(s)
+	terms = []
+	for key in corpus_dict.keys():
+		print (key)
+		terms.append(key)
+	
+	terms.sort()
+	return terms
 
-	return words.sort();

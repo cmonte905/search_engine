@@ -1,3 +1,6 @@
+
+my_index = {:}
+
 def main():
 	print ('Enter name of the directory you wish to index')
 
@@ -34,11 +37,34 @@ def main():
 if __name__ == "__main__":
    	main()
 
-
 def input_parser(input):
 	q = str()
 	if '\"' in iput:
 		q = var.split('\"')
 		print (q)
 
+# NaiveInvertedIndex---------------------------------------------------------
+corpus_dict = {}
 
+def add_term(term, documentID):
+	if (not term in corpus_dict):
+		l = []
+		l.append(documentID)
+		corpus_dict[term] = l
+	elif (term in corpus_dict and (not documentID in corpus_dict[term])):
+		corpus_dict[term].append(documentID)
+
+def term_count():
+	return len(corpus_dict)
+
+def get_postings(term):
+	if (term in corpus_dict):
+		return corpus_dict[term]
+	return NULL
+
+def get_dictionary():
+	words = []
+	for s in corpus_dict:
+		words.append(s)
+
+	return words.sort();

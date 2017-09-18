@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 
 my_index = {:}
 
+=======
+from jsonreader import read_corpus
+>>>>>>> 3a5d39b193efdab3083f026fde727d44875216b5
 def main():
 	print ('Enter name of the directory you wish to index')
 

@@ -1,9 +1,10 @@
 
 import os
+from jsonreader import read_corpus
 
+# The Corpus
 corpus_dict = {}
 
-from jsonreader import read_corpus
 def main():
 	# The inverted index
 	index = []

@@ -10,8 +10,7 @@ Corpus | Parse out json file into individual files| Done | Jaun
 Building the index | Positional Inverted Index | In Progress | Stan
 Document processing | Process out the terms from the corpus  | In Progress| Jaun
 Query Language | Process users query | In Progress | Cesar 
-
-Special queries
+Special queries | Support for special queries for admin uses | In Progress | TBD
 
 #### Additional Requirements:
 Requirement | Description | Status | Person Responsible

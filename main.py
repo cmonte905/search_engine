@@ -1,30 +1,122 @@
 
-import os
+import os.path
+import string
+import sys
 from jsonreader import read_corpus
 
-# The Corpus
 corpus_dict = {}
 
+def has_next_token(current, this_list):
+    # if the current index is less that the max index of the list, hasnext is true
+    max_length = len(this_list)
+    return (current < max_length - 1)
+
+# Naive Inverted Index ------------------------------------------------------------------------------------------------
+
+def add_term(term, documentID):
+	if (not term in corpus_dict):
+		id_list = []
+		id_list.append(documentID)
+		corpus_dict[term] = id_list
+	elif (term in corpus_dict and (not documentID in corpus_dict[term])):
+		corpus_dict[term].append(documentID)
+
+def term_count():
+	return len(corpus_dict)
+
+def get_postings(term):
+	if (term in corpus_dict):
+		return corpus_dict[term]
+	return []
+
+def get_dictionary():
+	terms = []
+	for key in corpus_dict.keys():
+		# print (key)
+		terms.append(key)
+	
+	terms.sort()
+	return terms
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+def print_results():
+    t = get_dictionary()
+    for term in t:
+        print (term + ': ' + str(get_postings(term)))
+
+# changes need to be made to parse the new corpus
+# this strcitly works for testing the moby dick chapters
 def main():
-	# The inverted index
-	index = []
+    print ('Files in this directory: ')
+    directory = os.path.dirname(os.path.realpath(__file__))
 
-	import os
-	for file in os.listdir("/mydir"):
-    	if file.endswith(".txt"):
-        	print(os.path.join("/mydir", file))
+    # names of the files
+    file_names = []
+    documentID = 0
 
-	print ('Enter name of the directory you wish to index')
+    # loops through the current directory and find all .txt files
+    for file in os.listdir(directory):
+        # files that end with .txt
+        if file.endswith('.txt'):
+            # print each file
+            #print(os.path.join(directory, file))
+            dir_path = os.path.join(directory, file).split('\\')
+            file_names.append(dir_path[-1])
 
-	user_input = input('Please enter something: ')
+    # for each of the files in file_name
+    for file in file_names:
+        # open the file and parse it
+        with open(file) as text_file:
+            m_file_lines = []
+            remover = str.maketrans('', '', string.punctuation)
 
-	q = str()
-	if '\"' in user_input:
-		q = user_input.split('\"')
-		print (q)
+            # read each line
+            file_content = text_file.readlines()
+            for line in file_content[0:]:
+                # remove punctuation and lowercase everything
+                line = line.lower().translate(remover)
+                # split each word by spaces
+                line_list = line.split(' ')
+
+                # add each term to m_file_lines
+                for term in line_list:
+                    m_file_lines.append(term)
+
+            # remove \n and ''
+            m_file_lines = list(map(lambda s : s.strip(), m_file_lines))
+            m_file_lines = list(filter(lambda s : s != '', m_file_lines))
+
+            index = 0
+            while (has_next_token(index, m_file_lines)):
+                # fix this
+                add_term(m_file_lines[index], documentID)
+                index = index + 1
+
+            documentID = documentID + 1
+    # print (m_file_lines)
+    # print (corpus_dict)
+
+    # get_dictionary()
+
+    print_results()
+
+    while True:
+        command = input('Please enter a term would you like to search: ')
+        if (command == 'quit'):
+            sys.exit
+        else:
+            print ('These documents contain that term: ')
+            postings = get_postings(command)
+            if (len(postings) > 0):
+                for id in postings:
+                    print ('document' + str(id))
 
 
-	print (q)
+
+if __name__ == "__main__":
+   	main()
+
 '''
 	while 1:
 		print('Quit (:q) Stem (:stem) Index (:index) Vocab (:vocab)')
@@ -46,41 +138,8 @@ def main():
 	print('Ended')
 '''
 
-if __name__ == "__main__":
-   	main()
-
 def input_parser(input):
 	q = str()
 	if '\"' in iput:
 		q = var.split('\"')
 		print (q)
-
-# NaiveInvertedIndex---------------------------------------------------------
-
-# corpus_dict at the top of page
-
-def add_term(term, documentID):
-	if (not term in corpus_dict):
-		id_list = []
-		id_list.append(documentID)
-		corpus_dict[term] = id_list
-	elif (term in corpus_dict and (not documentID in corpus_dict[term])):
-		corpus_dict[term].append(documentID)
-
-def term_count():
-	return len(corpus_dict)
-
-def get_postings(term):
-	if (term in corpus_dict):
-		return corpus_dict[term]
-	return []
-
-def get_dictionary():
-	terms = []
-	for key in corpus_dict.keys():
-		print (key)
-		terms.append(key)
-	
-	terms.sort()
-	return terms
-

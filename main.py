@@ -6,13 +6,15 @@ from jsonreader import read_corpus
 
 corpus_dict = {}
 
-def has_next_token(current, this_list):
+# Things i needed -----------------------------------------------------------------------------------------------------
+
+def has_next_token(current_index, this_list):
     # if the current index is less that the max index of the list, hasnext is true
-    max_length = len(this_list)
-    return (current < max_length - 1)
+    return (current_index < len(this_list) - 1)
 
 # Naive Inverted Index ------------------------------------------------------------------------------------------------
 
+# def add_term(term, documentID, position): # add this
 def add_term(term, documentID):
 	if (not term in corpus_dict):
 		id_list = []
@@ -101,9 +103,11 @@ def main():
 
     print_results()
 
+    # User input
     while True:
         command = input('Please enter a term would you like to search: ')
         if (command == 'quit'):
+            print ('Bye!')
             sys.exit
         else:
             print ('These documents contain that term: ')
@@ -111,8 +115,6 @@ def main():
             if (len(postings) > 0):
                 for id in postings:
                     print ('document' + str(id))
-
-
 
 if __name__ == "__main__":
    	main()
@@ -133,7 +135,6 @@ if __name__ == "__main__":
 			print('Vocab')
 		else:
 			print('No special query')
-
 
 	print('Ended')
 '''

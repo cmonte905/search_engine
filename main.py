@@ -7,13 +7,16 @@ corpus_dict = {}
 
 
 def has_next_token(current, this_list):
+# Things i needed -----------------------------------------------------------------------------------------------------
+
+def has_next_token(current_index, this_list):
     # if the current index is less that the max index of the list, hasnext is true
-    max_length = len(this_list)
-    return (current < max_length - 1)
+    return (current_index < len(this_list) - 1)
 
 
 # Naive Inverted Index ------------------------------------------------------------------------------------------------
 
+# def add_term(term, documentID, position): # add this
 def add_term(term, documentID):
     if (not term in corpus_dict):
         id_list = []
@@ -122,6 +125,14 @@ def main():
                 print ('Will be spitting out words')
         elif '*' in user_string:
             print ("This will get sent of to the wildcard class")
+    print_results()
+
+    # User input
+    while True:
+        command = input('Please enter a term would you like to search: ')
+        if (command == 'quit'):
+            print ('Bye!')
+            sys.exit
         else:
             print ('These documents contain that term: ')
             postings = get_postings(user_string)
@@ -132,3 +143,29 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+'''
+	while 1:
+		print('Quit (:q) Stem (:stem) Index (:index) Vocab (:vocab)')
+		user_input = input('Please enter something: ')
+
+		if user_input == ":q":
+			print('Quitting...')
+			break
+		elif user_input == ":stem":
+			print('Stemming')
+		elif user_input == ":index":
+			print('Indexing')
+		elif user_input == ":vocab":
+			print('Vocab')
+		else:
+			print('No special query')
+
+	print('Ended')
+'''
+
+def input_parser(input):
+	q = str()
+	if '\"' in iput:
+		q = var.split('\"')
+		print (q)

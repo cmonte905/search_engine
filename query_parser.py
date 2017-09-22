@@ -16,3 +16,7 @@ def input_parser(user_string):
             print ('Will be indexing folder')
         if ':vocab' in user_string:
             print ('Will be spitting out words')
+
+def wildcard_parser(wildcard_string):
+    print (wildcard_string)
+

@@ -1,42 +1,47 @@
-
 import os.path
 import string
 import sys
-from jsonreader import read_corpus
+from query_parser import input_parser
 
 corpus_dict = {}
+
 
 def has_next_token(current, this_list):
     # if the current index is less that the max index of the list, hasnext is true
     max_length = len(this_list)
     return (current < max_length - 1)
 
+
 # Naive Inverted Index ------------------------------------------------------------------------------------------------
 
 def add_term(term, documentID):
-	if (not term in corpus_dict):
-		id_list = []
-		id_list.append(documentID)
-		corpus_dict[term] = id_list
-	elif (term in corpus_dict and (not documentID in corpus_dict[term])):
-		corpus_dict[term].append(documentID)
+    if (not term in corpus_dict):
+        id_list = []
+        id_list.append(documentID)
+        corpus_dict[term] = id_list
+    elif (term in corpus_dict and (not documentID in corpus_dict[term])):
+        corpus_dict[term].append(documentID)
+
 
 def term_count():
-	return len(corpus_dict)
+    return len(corpus_dict)
+
 
 def get_postings(term):
-	if (term in corpus_dict):
-		return corpus_dict[term]
-	return []
+    if (term in corpus_dict):
+        return corpus_dict[term]
+    return []
+
 
 def get_dictionary():
-	terms = []
-	for key in corpus_dict.keys():
-		# print (key)
-		terms.append(key)
-	
-	terms.sort()
-	return terms
+    terms = []
+    for key in corpus_dict.keys():
+        # print (key)
+        terms.append(key)
+
+    terms.sort()
+    return terms
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -44,6 +49,7 @@ def print_results():
     t = get_dictionary()
     for term in t:
         print (term + ': ' + str(get_postings(term)))
+
 
 # changes need to be made to parse the new corpus
 # this strcitly works for testing the moby dick chapters
@@ -53,14 +59,14 @@ def main():
 
     # names of the files
     file_names = []
-    documentID = 0
+    document_id = 0
 
     # loops through the current directory and find all .txt files
     for file in os.listdir(directory):
         # files that end with .txt
         if file.endswith('.txt'):
             # print each file
-            #print(os.path.join(directory, file))
+            # print(os.path.join(directory, file))
             dir_path = os.path.join(directory, file).split('\\')
             file_names.append(dir_path[-1])
 
@@ -84,62 +90,45 @@ def main():
                     m_file_lines.append(term)
 
             # remove \n and ''
-            m_file_lines = list(map(lambda s : s.strip(), m_file_lines))
-            m_file_lines = list(filter(lambda s : s != '', m_file_lines))
+            m_file_lines = list(map(lambda s: s.strip(), m_file_lines))
+            m_file_lines = list(filter(lambda s: s != '', m_file_lines))
 
             index = 0
-            while (has_next_token(index, m_file_lines)):
+            while has_next_token(index, m_file_lines):
                 # fix this
-                add_term(m_file_lines[index], documentID)
+                add_term(m_file_lines[index], document_id)
                 index = index + 1
 
-            documentID = documentID + 1
+                document_id = document_id + 1
     # print (m_file_lines)
     # print (corpus_dict)
 
     # get_dictionary()
 
-    print_results()
+    # print_results()
 
-    while True:
-        command = input('Please enter a term would you like to search: ')
-        if (command == 'quit'):
-            sys.exit
+    while 1:
+        user_string = input("Please enter a word search:\n")
+        if ':' in user_string:
+            print (user_string)
+            if ':q' in user_string:
+                exit()
+            if ':stem' in user_string:
+                print ("Will be stemming the token")
+                print (user_string.split(" ")[1])
+            if ':index' in user_string:
+                print ('Will be indexing folder')
+            if ':vocab' in user_string:
+                print ('Will be spitting out words')
+        elif '*' in user_string:
+            print ("This will get sent of to the wildcard class")
         else:
             print ('These documents contain that term: ')
-            postings = get_postings(command)
-            if (len(postings) > 0):
+            postings = get_postings(user_string)
+            if len(postings) > 0:
                 for id in postings:
                     print ('document' + str(id))
 
 
-
 if __name__ == "__main__":
-   	main()
-
-'''
-	while 1:
-		print('Quit (:q) Stem (:stem) Index (:index) Vocab (:vocab)')
-		user_input = input('Please enter something: ')
-
-		if user_input == ":q":
-			print('Quitting...')
-			break
-		elif user_input == ":stem":
-			print('Stemming')
-		elif user_input == ":index":
-			print('Indexing')
-		elif user_input == ":vocab":
-			print('Vocab')
-		else:
-			print('No special query')
-
-
-	print('Ended')
-'''
-
-def input_parser(input):
-	q = str()
-	if '\"' in iput:
-		q = var.split('\"')
-		print (q)
+    main()

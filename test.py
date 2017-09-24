@@ -91,28 +91,30 @@ def index_file(file_name, documentID):
         # create postings for term
         for key in term_positions:
             add_term(key, documentID, term_positions[key])
-        for key in corpus_dict:
-            print_term_info(key)
 
 def print_term_info(term):
     for post in corpus_dict[term]:
-        print ('<' + term + ', [ ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>')  
+        print ('<' + term + ', [ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>')  
 
 # k: how many terms away is first_term from second_term
+# still need to be added
+# - working with same words for frist and second term
 def near(first_term, second_term, k):
-    # first_term NEAR/k second_term
+    # query: first_term NEAR/k second_term
     # corpus_dict[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
-    first_term_postings = corpus_dict[first_term]
-    second_term_postings = corpus_dict[second_term]
+
+    # list of documents that have first_term NEAR/k second_term
     doc_list = []
     
-    for post1 in first_term_postings:
-        for post2 in second_term_postings:
-            # if the doc ID's are the same, check this document
+    for post1 in corpus_dict[first_term]:
+        for post2 in corpus_dict[second_term]:
+            # if the doc ID's are the same, check that document
             if (post1.get_document_id() == post2.get_document_id()):
                 for positions1 in post1.get_positions():
                     for positions2 in post2.get_positions():
-                        if (abs(positions1 - positions2) <= k): 
+                        distance = positions2 - positions1
+                        # if (abs(distance) <= k):
+                        if (distance <= k and not distance <= 0): 
                             doc_list.append(post1.get_document_id())
 
     return doc_list
@@ -130,7 +132,13 @@ def main():
         index_file(file, documentID)
         documentID = documentID + 1
 
-    print(near('bottom', 'sea', 3))
+    # print out the postings for each term in corpus
+    for key in corpus_dict:
+        print_term_info(key)
+
+    # tesing NEAR
+    # use only with moby dick files for now
+    print(near('some', 'some', 8))
 
 if __name__ == "__main__":
    	main()

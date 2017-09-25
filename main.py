@@ -123,6 +123,7 @@ def main():
             print("This will get sent of to the wildcard class")
             wildcard_parser(user_string)
         else:
+            input_parser(user_string)
             postings = get_postings(user_string)
             if len(postings) > 0:
                 for id in postings:

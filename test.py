@@ -1,5 +1,7 @@
 import os
 import string
+# import porter2stemmer
+from porter2stemmer import Porter2Stemmer
 
 corpus_dict = {}
 
@@ -66,6 +68,7 @@ def get_dictionary():
 
 
 def index_file(file_name, documentID):
+    stemmer = Porter2Stemmer()
     with open(file_name) as text_file:
         m_file_lines = []
         punctuation = str.maketrans(dict.fromkeys(string.punctuation))
@@ -91,6 +94,8 @@ def index_file(file_name, documentID):
         # create postings for term
         for key in term_positions:
             add_term(key, documentID, term_positions[key])
+            stemmed_term = (stemmer.stem(key))
+            add_term(stemmed_term, documentID, term_positions[key])
 
 def print_term_info(term):
     for post in corpus_dict[term]:

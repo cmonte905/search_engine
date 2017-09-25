@@ -1,8 +1,12 @@
 import os
 import string
-# import porter2stemmer
+# Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
 
+# Binary Tree implementation
+from binarytree import tree, pprint, convert
+
+# The Index
 corpus_dict = {}
 
 # Custom Classes ----------------------------------------------------------------------------------
@@ -25,7 +29,7 @@ class posting:
     def print_posting(self):
         return str(str(self.document_id) + ' ' + str(self.positions_list))
 
-# Cutsom Medthos ----------------------------------------------------------------------------------
+# Cutsom Medthods ----------------------------------------------------------------------------------
 
 def has_next_token(current_index, this_list):
     return (current_index < len(this_list) - 1)
@@ -35,7 +39,6 @@ def add_term(term, documentID, position):
         term_posting = posting(documentID, position)
         corpus_dict[term] = [term_posting]
     else:
-    #elif (term in corpus_dict):
         term_posting = posting(documentID, position)
         corpus_dict[term].append(term_posting)
 
@@ -58,13 +61,11 @@ def get_postings(term):
 		return corpus_dict[term]
 	return []
 
+# Returns an alphabetized list of keys in corpus_dict
 def get_dictionary():
-	terms = []
-	for key in corpus_dict.keys():
-		terms.append(key)	
-	terms.sort()
-	return terms
-
+    terms = list(corpus_dict.keys())
+    terms.sort()
+    return terms
 
 
 def index_file(file_name, documentID):
@@ -86,11 +87,13 @@ def index_file(file_name, documentID):
         m_file_lines = list(filter(lambda s : s != '', m_file_lines))
 
         # Here we have a list of all terms as they appear in the text
-                
+        
         term_positions = find_positions(m_file_lines)
+        '''
+        # print terms and positions
         for k in term_positions:
             print (k, term_positions[k])
-
+        '''
         # create postings for term
         for key in term_positions:
             add_term(key, documentID, term_positions[key])
@@ -128,22 +131,34 @@ def main():
     file_names = [] # Names of files
     documentID = 1
 
+    # Find all .txt files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
     for file in os.listdir(directory):
         if file.endswith('.txt'):
             file_names.append(str(file))
     
+    # Index each file and mark its Document ID
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
 
     # print out the postings for each term in corpus
-    for key in corpus_dict:
-        print_term_info(key)
+    #print (list(corpus_dict.keys())[0:20])
 
-    # tesing NEAR
+    print (get_dictionary())
+
+# Binary Tree test
+    #term_tree = convert((get_dictionary())[50:65])
+    #pprint(term_tree)
+
+# Print each term and postings with it
+    #for key in corpus_dict:
+        #print_term_info(key)
+        # print (key)
+
+# tesing NEAR
     # use only with moby dick files for now
-    print(near('some', 'some', 8))
+    #print(near('some', 'some', 8))
 
 if __name__ == "__main__":
    	main()

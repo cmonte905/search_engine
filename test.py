@@ -1,4 +1,5 @@
-import os
+import os.path
+import json
 import string
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -29,8 +30,7 @@ class posting:
     def print_posting(self):
         return str(str(self.document_id) + ' ' + str(self.positions_list))
 
-# Cutsom Medthods ----------------------------------------------------------------------------------
-
+# Cutsom Methods ----------------------------------------------------------------------------------
 def has_next_token(current_index, this_list):
     return (current_index < len(this_list) - 1)
 
@@ -67,38 +67,53 @@ def get_dictionary():
     terms.sort()
     return terms
 
-
+# Use index_file for .txt files
+'''
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
+    punctuation = str.maketrans(dict.fromkeys(string.punctuation))
     with open(file_name) as text_file:
-        m_file_lines = []
-        punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+        file_lines = []
 
-        file_content = text_file.readlines()
-        for line in file_content[0:]:
+        for line in text_file.readlines():
             line = line.lower().translate(punctuation)
             line_list = line.split(' ')
 
             for term in line_list:
-                m_file_lines.append(term)
+                file_lines.append(term)
 
         # remove \n and ''
-        m_file_lines = list(map(lambda s : s.strip(), m_file_lines))
-        m_file_lines = list(filter(lambda s : s != '', m_file_lines))
+        file_lines = list(map(lambda s : s.strip(), file_lines))
+        file_lines = list(filter(lambda s : s != '', file_lines))
 
         # Here we have a list of all terms as they appear in the text
-        
-        term_positions = find_positions(m_file_lines)
-        '''
-        # print terms and positions
-        for k in term_positions:
-            print (k, term_positions[k])
-        '''
+        term_positions = find_positions(file_lines)
+
         # create postings for term
         for key in term_positions:
             add_term(key, documentID, term_positions[key])
-            stemmed_term = (stemmer.stem(key))
-            add_term(stemmed_term, documentID, term_positions[key])
+            if (stemmer.stem(key) != key):
+                add_term(stemmer.stem(key), documentID, term_positions[key])
+'''
+# Use this index_file for .json files
+def index_file(file_name, documentID):
+    stemmer = Porter2Stemmer()
+    punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+    with open(file_name) as json_file:
+        article_data = json.load(json_file)
+        
+        # Parse the body of the json file
+        body = (article_data['body']).lower().translate(punctuation).split(' ')
+        body = list(map(lambda s : s.strip(), body))
+        body = list(filter(lambda s : s != '', body))
+        print (body)
+
+        term_positions = find_positions(body)
+
+        for key in term_positions:
+            add_term(key, documentID, term_positions[key])
+            if (stemmer.stem(key) != key):
+                add_term(stemmer.stem(key), documentID, term_positions[key])
 
 def print_term_info(term):
     for post in corpus_dict[term]:
@@ -129,12 +144,13 @@ def near(first_term, second_term, k):
 
 def main():
     file_names = [] # Names of files
-    documentID = 1
+    documentID = 0
 
     # Find all .txt files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
     for file in os.listdir(directory):
-        if file.endswith('.txt'):
+        if file.endswith('.json'):
+        # if file.endswith('.txt'):
             file_names.append(str(file))
     
     # Index each file and mark its Document ID
@@ -145,20 +161,22 @@ def main():
     # print out the postings for each term in corpus
     #print (list(corpus_dict.keys())[0:20])
 
-    print (get_dictionary())
+# Dictionary alphabetized
+    #print (get_dictionary())
 
 # Binary Tree test
     #term_tree = convert((get_dictionary())[50:65])
     #pprint(term_tree)
 
 # Print each term and postings with it
-    #for key in corpus_dict:
-        #print_term_info(key)
-        # print (key)
+    for key in corpus_dict:
+        print_term_info(key)
 
 # tesing NEAR
     # use only with moby dick files for now
     #print(near('some', 'some', 8))
+
+    #print_term_info('whale')
 
 if __name__ == "__main__":
    	main()

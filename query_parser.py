@@ -1,22 +1,23 @@
 from sys import exit
-import re
+from re import sub, findall, split
+
 
 def input_parser(user_string):
     """
-    First checks to see if there is a colon in the user's input and 
-    runs the appropiate commands 
+    First checks to see if there is a colon in the user's input and
+    runs the appropiate commands
     """
-    if ':' in user_string:
-        print (user_string)
-        if ':q' in user_string:
-            exit()
-        if ':stem' in user_string:
-            print ("Will be stemming the token")
-        if ':index' in user_string:
-            print ('Will be indexing folder')
-        if ':vocab' in user_string:
-            print ('Will be spitting out words')
+    query_list = []
+    sub_list = list(findall(r'"([^"]*)"', user_string))
+    user_string = sub(r'"([^"]*)"', " ", user_string)
+    query_list.append(sub_list)  # Added in the phrase literal
+    query_list.append(split(r'\s+', user_string.rstrip()))  # Removes spaces at the end of the string
+    print('Parsed out query list:\n', query_list)
+
+
+def double_quotes(strings):
+    print(strings)
+
 
 def wildcard_parser(wildcard_string):
-    print (wildcard_string)
-
+    print(wildcard_string)

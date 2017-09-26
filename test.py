@@ -22,34 +22,15 @@ class KGramIndex:
 	def __init__(self):
 		self.k_gram_index = []
 
-	def add_string(self, word, k):
-		word = list('$' + word + '$')
-		temp = ''
+    def get_document_id(self):
+        return str(self.document_id)
 
-		for i in range(0, len(word)):
-			temp = word[i]
-			#print (temp)
-
-			# starts at position i
-			if i + k <= len(word):
-				for j in range(i + 1, i + k):
-					temp += word[j]
-			else:
-				break
-
-			self.k_gram_index.append(temp)
-
-	def print_index(self):
-		s = ''
-		print (len(self.k_gram_index))
-		for i in range(0, len(self.k_gram_index)):
-			s += self.k_gram_index[i] + ' '
+    def get_positions(self):
+        return self.positions_list
 
 		print (s)
 
-# Cutsom Methods ----------------------------------------------------------------------------------
-def has_next_token(current_index, this_list):
-    return (current_index < len(this_list) - 1)
+# Cutsom Medthos ----------------------------------------------------------------------------------
 
 def add_term(term, documentID, position):
     if (not term in corpus_dict):
@@ -70,8 +51,7 @@ def find_positions(term_list):
             positions_dict[term_list[i]].append(i)
     return positions_dict
 
-def term_count():
-	return len(corpus_dict)
+
 
 def get_postings(term):
 	if (term in corpus_dict):
@@ -143,7 +123,6 @@ def near(first_term, second_term, k):
 
     # list of documents that have first_term NEAR/k second_term
     doc_list = []
-    
     for post1 in corpus_dict[first_term]:
         for post2 in corpus_dict[second_term]:
             # if the doc ID's are the same, check that document

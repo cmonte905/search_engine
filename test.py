@@ -7,30 +7,12 @@ from porter2stemmer import Porter2Stemmer
 
 # Binary Tree implementation
 from binarytree import tree, pprint, convert
-from posting import posting
+from query_parser import input_parser, wildcard_parser
 
 # The Index
 corpus_dict = {}
 # List of vocab for terms in the corpus
 vocab = {}
-
-# Custom Classes ----------------------------------------------------------------------------------
-
-# Class to encapsulate one term posting
-
-class KGramIndex:
-	def __init__(self):
-		self.k_gram_index = []
-
-    def get_document_id(self):
-        return str(self.document_id)
-
-    def get_positions(self):
-        return self.positions_list
-
-		print (s)
-
-# Cutsom Medthos ----------------------------------------------------------------------------------
 
 def add_term(term, documentID, position):
     if (not term in corpus_dict):
@@ -50,8 +32,6 @@ def find_positions(term_list):
         else:
             positions_dict[term_list[i]].append(i)
     return positions_dict
-
-
 
 def get_postings(term):
 	if (term in corpus_dict):
@@ -100,8 +80,7 @@ def index_file(file_name, documentID):
         article_data = json.load(json_file)
         
         body = (article_data['body']).lower().translate(punctuation).split(' ')
-        body = list(map(lambda s : s.strip(), body))
-        body = list(filter(lambda s : s != '', body))
+        body = list(filter(lambda w : w != '', map(lambda s : s.strip(), body)))
 
         term_positions = find_positions(body)
 
@@ -140,9 +119,9 @@ def main():
     file_names = [] # Names of files
     documentID = 0
 
-    #k = 
 
-    # Find all .txt files in this directory
+
+    # Find all .json files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
     for file in os.listdir(directory):
         if file.endswith('.json'):
@@ -153,7 +132,30 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
-
+    '''
+    while 1:
+        user_string = input("Please enter a word search:\n")
+        if ':' in user_string:
+            print (user_string)
+            if ':q' in user_string:
+                exit()
+            if ':stem' in user_string:
+                print ("Will be stemming the token")
+                print (user_string.split(" ")[1])
+            if ':index' in user_string:
+                print ('Will be indexing folder')
+            if ':vocab' in user_string:
+                print ('Will be spitting out words')
+        elif '*' in user_string:
+            print("This will get sent of to the wildcard class")
+            wildcard_parser(user_string)
+        else:
+            input_parser(user_string)
+            postings = get_postings(user_string)
+            if len(postings) > 0:
+                for id in postings:
+                    ('document' + str(id))
+    '''
 
     #print out the postings for each term in corpus
     #print (list(corpus_dict.keys())[0:20])
@@ -166,16 +168,14 @@ def main():
     #pprint(term_tree)
 
 # Print each term and postings with it
-    #for key in corpus_dict:
-        #print_term_info(key)
+    for key in corpus_dict:
+        print_term_info(key)
 
 # Tesing NEAR
     # use only with moby dick files for now
     #print(near('sand', 'massacre', 1))
 
     #print_term_info('whale')
-
-
 
 if __name__ == "__main__":
    	main()

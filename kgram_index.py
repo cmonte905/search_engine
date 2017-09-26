@@ -1,5 +1,4 @@
-class KGramIndex:
-
+class kgram_index:
 	def __init__(self):
 		self.k_gram_index = []
 	

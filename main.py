@@ -1,13 +1,15 @@
 import os.path
 import string
 import sys
-from query_parser import input_parser
+from query_parser import input_parser, wildcard_parser
 
 corpus_dict = {}
 
 
 def has_next_token(current, this_list):
-# Things i needed -----------------------------------------------------------------------------------------------------
+    print (1)  # otherwise it wont run
+    # Things i needed -----------------------------------------------------------------------------------------------------
+
 
 def has_next_token(current_index, this_list):
     # if the current index is less that the max index of the list, hasnext is true
@@ -103,12 +105,6 @@ def main():
                 index = index + 1
 
                 document_id = document_id + 1
-    # print (m_file_lines)
-    # print (corpus_dict)
-
-    # get_dictionary()
-
-    # print_results()
 
     while 1:
         user_string = input("Please enter a word search:\n")
@@ -124,48 +120,16 @@ def main():
             if ':vocab' in user_string:
                 print ('Will be spitting out words')
         elif '*' in user_string:
-            print ("This will get sent of to the wildcard class")
-    print_results()
-
-    # User input
-    while True:
-        command = input('Please enter a term would you like to search: ')
-        if (command == 'quit'):
-            print ('Bye!')
-            sys.exit
+            print("This will get sent of to the wildcard class")
+            wildcard_parser(user_string)
         else:
-            print ('These documents contain that term: ')
+            input_parser(user_string)
             postings = get_postings(user_string)
             if len(postings) > 0:
                 for id in postings:
-                    print ('document' + str(id))
+                    ('document' + str(id))
 
 
 if __name__ == "__main__":
     main()
 
-'''
-	while 1:
-		print('Quit (:q) Stem (:stem) Index (:index) Vocab (:vocab)')
-		user_input = input('Please enter something: ')
-
-		if user_input == ":q":
-			print('Quitting...')
-			break
-		elif user_input == ":stem":
-			print('Stemming')
-		elif user_input == ":index":
-			print('Indexing')
-		elif user_input == ":vocab":
-			print('Vocab')
-		else:
-			print('No special query')
-
-	print('Ended')
-'''
-
-def input_parser(input):
-	q = str()
-	if '\"' in iput:
-		q = var.split('\"')
-		print (q)

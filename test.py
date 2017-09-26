@@ -23,7 +23,7 @@ class posting:
 
     def get_document_id(self):
         return str(self.document_id)
-    
+
     def get_positions(self):
         return self.positions_list
 
@@ -33,6 +33,9 @@ class posting:
 # Cutsom Methods ----------------------------------------------------------------------------------
 def has_next_token(current_index, this_list):
     return (current_index < len(this_list) - 1)
+
+
+# Cutsom Medthos ----------------------------------------------------------------------------------
 
 def add_term(term, documentID, position):
     if (not term in corpus_dict):
@@ -128,7 +131,6 @@ def near(first_term, second_term, k):
 
     # list of documents that have first_term NEAR/k second_term
     doc_list = []
-    
     for post1 in corpus_dict[first_term]:
         for post2 in corpus_dict[second_term]:
             # if the doc ID's are the same, check that document

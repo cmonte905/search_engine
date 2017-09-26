@@ -3,7 +3,7 @@ class posting:
         self.document_id = _id
         self.positions_list = pos_list
 
-    def add_position(position):
+    def add_position(self, position):
         self.positions_list.append(position)
 
     def get_document_id(self):

@@ -1,34 +1,51 @@
 import os.path
 import json
 import string
+from posting import posting
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
 
 # Binary Tree implementation
 from binarytree import tree, pprint, convert
+from posting import posting
 
 # The Index
 corpus_dict = {}
+# List of vocab for terms in the corpus
+vocab = {}
 
 # Custom Classes ----------------------------------------------------------------------------------
 
 # Class to encapsulate one term posting
-class posting:
-    def __init__(self, _id, pos_list):
-        self.document_id = _id
-        self.positions_list = pos_list
 
-    def add_position(position):
-        self.positions_list.append(position)
+class KGramIndex:
+	def __init__(self):
+		self.k_gram_index = []
 
-    def get_document_id(self):
-        return str(self.document_id)
-    
-    def get_positions(self):
-        return self.positions_list
+	def add_string(self, word, k):
+		word = list('$' + word + '$')
+		temp = ''
 
-    def print_posting(self):
-        return str(str(self.document_id) + ' ' + str(self.positions_list))
+		for i in range(0, len(word)):
+			temp = word[i]
+			#print (temp)
+
+			# starts at position i
+			if i + k <= len(word):
+				for j in range(i + 1, i + k):
+					temp += word[j]
+			else:
+				break
+
+			self.k_gram_index.append(temp)
+
+	def print_index(self):
+		s = ''
+		print (len(self.k_gram_index))
+		for i in range(0, len(self.k_gram_index)):
+			s += self.k_gram_index[i] + ' '
+
+		print (s)
 
 # Cutsom Methods ----------------------------------------------------------------------------------
 def has_next_token(current_index, this_list):
@@ -144,6 +161,8 @@ def main():
     file_names = [] # Names of files
     documentID = 0
 
+    #k = 
+
     # Find all .txt files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
     for file in os.listdir(directory):
@@ -155,6 +174,7 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
+
 
     #print out the postings for each term in corpus
     #print (list(corpus_dict.keys())[0:20])
@@ -172,9 +192,11 @@ def main():
 
 # Tesing NEAR
     # use only with moby dick files for now
-    print(near('sand', 'massacre', 1))
+    #print(near('sand', 'massacre', 1))
 
     #print_term_info('whale')
+
+
 
 if __name__ == "__main__":
    	main()

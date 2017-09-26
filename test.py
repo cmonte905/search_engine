@@ -160,19 +160,19 @@ def main():
     #print (list(corpus_dict.keys())[0:20])
 
 # Dictionary alphabetized, prints terms only
-    print (get_dictionary())
+    #print (get_dictionary())
 
 # Binary Tree test
     #term_tree = convert((get_dictionary())[50:65])
     #pprint(term_tree)
 
 # Print each term and postings with it
-    for key in corpus_dict:
-        print_term_info(key)
+    #for key in corpus_dict:
+        #print_term_info(key)
 
 # Tesing NEAR
     # use only with moby dick files for now
-    #print(near('some', 'some', 8))
+    print(near('sand', 'massacre', 1))
 
     #print_term_info('whale')
 

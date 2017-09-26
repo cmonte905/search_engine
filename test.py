@@ -102,11 +102,9 @@ def index_file(file_name, documentID):
     with open(file_name) as json_file:
         article_data = json.load(json_file)
         
-        # Parse the body of the json file
         body = (article_data['body']).lower().translate(punctuation).split(' ')
         body = list(map(lambda s : s.strip(), body))
         body = list(filter(lambda s : s != '', body))
-        print (body)
 
         term_positions = find_positions(body)
 
@@ -158,11 +156,11 @@ def main():
         index_file(file, documentID)
         documentID = documentID + 1
 
-    # print out the postings for each term in corpus
+    #print out the postings for each term in corpus
     #print (list(corpus_dict.keys())[0:20])
 
-# Dictionary alphabetized
-    #print (get_dictionary())
+# Dictionary alphabetized, prints terms only
+    print (get_dictionary())
 
 # Binary Tree test
     #term_tree = convert((get_dictionary())[50:65])
@@ -172,7 +170,7 @@ def main():
     for key in corpus_dict:
         print_term_info(key)
 
-# tesing NEAR
+# Tesing NEAR
     # use only with moby dick files for now
     #print(near('some', 'some', 8))
 

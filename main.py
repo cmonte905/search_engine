@@ -6,11 +6,6 @@ from query_parser import input_parser, wildcard_parser
 corpus_dict = {}
 
 
-def has_next_token(current, this_list):
-    print (1)  # otherwise it wont run
-    # Things i needed -----------------------------------------------------------------------------------------------------
-
-
 def has_next_token(current_index, this_list):
     # if the current index is less that the max index of the list, hasnext is true
     return (current_index < len(this_list) - 1)

@@ -1,8 +1,7 @@
 class KGramIndex:
-
 	def __init__(self):
 		self.k_gram_index = []
-	
+
 	def add_string(self, word, k):
 		word = list('$' + word + '$')
 		temp = ''
@@ -10,7 +9,6 @@ class KGramIndex:
 
 		for i in range(0, len(word)):
 			temp = word[i]
-			#print (temp)
 
 			# starts at position i
 			if i + k <= len(word):
@@ -29,32 +27,15 @@ class KGramIndex:
 
 		print (s)
 
-'''
-Example of code to run this class
-k = KGramIndex.KGramIndex()
-k.add_string('hello', 3)
-k.print_index()
-'''
+	def get_kgrams(self):
+		return self.k_gram_index
 
 
+#Example of code to run this class
+k = KGramIndex()
+for i in range(1, 4):
+	k.add_string('he', i)
+print (k.get_kgrams())
 
-$hello$
-$h
-h
-e
-l
-o
-
-
-$h
-el
-lo
-o$
-
-
-$he
-ell
-llo
-lo$
 
 

@@ -8,12 +8,13 @@ from porter2stemmer import Porter2Stemmer
 # Binary Tree implementation
 from binarytree import tree, pprint, convert
 from query_parser import input_parser, wildcard_parser
+from KGramIndex import KGramIndex
 
 # The Index
 corpus_dict = {}
 # List of vocab for terms in the corpus
 vocab = {}
-
+'''
 def add_term(term, documentID, position):
     if (not term in corpus_dict):
         term_posting = posting(documentID, position)
@@ -21,6 +22,14 @@ def add_term(term, documentID, position):
     else:
         term_posting = posting(documentID, position)
         corpus_dict[term].append(term_posting)
+'''
+def add_term(term, documentID, position, index):
+    if (not term in index):
+        term_posting = posting(documentID, position)
+        index[term] = [term_posting]
+    else:
+        term_posting = posting(documentID, position)
+        index[term].append(term_posting)
 
 # Maps out terms with positions in the document into a dictionary
 # returns a dictionary of terms and a list of it positions 
@@ -85,9 +94,9 @@ def index_file(file_name, documentID):
         term_positions = find_positions(body)
 
         for key in term_positions:
-            add_term(key, documentID, term_positions[key])
+            add_term(key, documentID, term_positions[key], corpus_dict)
             if (stemmer.stem(key) != key):
-                add_term(stemmer.stem(key), documentID, term_positions[key])
+                add_term(stemmer.stem(key), documentID, term_positions[key], corpus_dict)
 
 def print_term_info(term):
     for post in corpus_dict[term]:
@@ -115,11 +124,16 @@ def near(first_term, second_term, k):
 
     return doc_list
 
+def k_gram_test(term):
+    k = KGramIndex()
+    for i in range(1, 4):
+	    k.add_string(term, i)
+    print (k.get_kgrams())
+    return k.get_kgrams()
+
 def main():
     file_names = [] # Names of files
     documentID = 0
-
-
 
     # Find all .json files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
@@ -132,6 +146,7 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
+    
     '''
     while 1:
         user_string = input("Please enter a word search:\n")
@@ -161,21 +176,25 @@ def main():
     #print (list(corpus_dict.keys())[0:20])
 
 # Dictionary alphabetized, prints terms only
-    #print (get_dictionary())
+    print (get_dictionary())
 
 # Binary Tree test
     #term_tree = convert((get_dictionary())[50:65])
     #pprint(term_tree)
 
 # Print each term and postings with it
-    for key in corpus_dict:
-        print_term_info(key)
+    #for key in corpus_dict:
+        #print_term_info(key)
 
 # Tesing NEAR
     # use only with moby dick files for now
     #print(near('sand', 'massacre', 1))
 
     #print_term_info('whale')
+
+# KGram Testing
+    #for term in corpus_dict:
+        #k_gram_test(term)
 
 if __name__ == "__main__":
    	main()

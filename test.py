@@ -1,10 +1,11 @@
 import os.path
 import json
 import string
+from positional_inverted_index import positional_inverted_index
 from posting import posting
+
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-
 # Binary Tree implementation
 from binarytree import tree, pprint, convert
 from query_parser import input_parser, wildcard_parser
@@ -132,6 +133,9 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
+
+
+
     '''
     while 1:
         user_string = input("Please enter a word search:\n")
@@ -168,8 +172,8 @@ def main():
     #pprint(term_tree)
 
 # Print each term and postings with it
-    for key in corpus_dict:
-        print_term_info(key)
+    #for key in corpus_dict:
+        #print_term_info(key)
 
 # Tesing NEAR
     # use only with moby dick files for now

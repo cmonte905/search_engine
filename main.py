@@ -60,7 +60,6 @@ def vocab():
 def near(first_term, second_term, k):
     # query: first_term NEAR/k second_term
     # index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
-
     # list of documents that have first_term NEAR/k second_term
     doc_list = []
     for post1 in index.get_index()[first_term]:
@@ -88,21 +87,19 @@ def k_gram_test(term):
 
 def main():
     file_names = [] # Names of files
-    documentID = 0
+    documentID = 0  # Document ID
 
     # Find all .json files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
     for file in os.listdir(directory):
         if file.endswith('.json'):
-        # if file.endswith('.txt'):
             file_names.append(str(file))
     
     # Index each file and mark its Document ID
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
-
-    #open_file_content('json1.json')
+        
     vocab()
 
     '''

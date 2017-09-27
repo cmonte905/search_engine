@@ -1,4 +1,4 @@
-class KGramIndex:
+class k_gram_index:
 	def __init__(self):
 		self.k_gram_index = []
 
@@ -29,13 +29,3 @@ class KGramIndex:
 
 	def get_kgrams(self):
 		return self.k_gram_index
-
-
-#Example of code to run this class
-k = KGramIndex()
-for i in range(1, 4):
-	k.add_string('he', i)
-print (k.get_kgrams())
-
-
-

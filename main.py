@@ -3,6 +3,7 @@ import json
 import string
 from positional_inverted_index import positional_inverted_index
 from posting import posting
+from k_gram_index import k_gram_index
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -44,11 +45,18 @@ def index_file(file_name, documentID):
             if (stemmed_term != key and not stemmed_term in index.m_index):
                 index.add_term(stemmer.stem(key), documentID, term_positions[key])
 
-def print_term_info(term):
-    for post in (index.get_index())[term]:
-        print ('<' + term + ', [ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>')  
+# If the user selects a certain document, for displaying the original content
+def open_file_content(file_name):
+    with open(file_name) as json_file:
+        article_data = json.load(json_file)
+        print (article_data['title'] + '\n')
+        print (article_data['body'] + '\n')
+        print (article_data['url'])
 
-# still need to be added
+def vocab():
+    print (index.get_dictionary())
+    print ('Term Count: ' + str(index.get_term_count()))
+
 def near(first_term, second_term, k):
     # query: first_term NEAR/k second_term
     # index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
@@ -69,11 +77,18 @@ def near(first_term, second_term, k):
 
     return doc_list
 
+
+# Testing of Kgrams
+def k_gram_test(term):
+    k = k_gram_index()
+    for i in range(1, 4):
+        k.add_string(term, i)
+    print (k.get_kgrams())
+    return k.get_kgrams()
+
 def main():
     file_names = [] # Names of files
     documentID = 0
-
-    print (type(index))
 
     # Find all .json files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
@@ -86,6 +101,9 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
+
+    #open_file_content('json1.json')
+    vocab()
 
     '''
     while 1:
@@ -115,18 +133,21 @@ def main():
     #print out the postings for each term in corpus
     #print (list(corpus_dict.keys())[0:20])
 
-# Dictionary alphabetized, prints terms only
-    #print (index.get_dictionary())
+    # Dictionary alphabetized, prints terms only
+    # print (index.get_dictionary())
+    # Print each term and postings with it
+    #for key in index.get_index():
+        #index.print_term_info(key)
 
-# Print each term and postings with it
-    for key in index.get_index():
-        print_term_info(key)
-
-# Tesing NEAR
+# Testing NEAR
     # use only with moby dick files for now
-    print(near('sand', 'massacre', 10))
+    # print(near('sand', 'massacre', 10))
 
     #print_term_info('whale')
+
+# K Gram test
+    #for term in index.get_index():
+        #k_gram_test(term)
 
 if __name__ == "__main__":
    	main()

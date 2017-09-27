@@ -28,3 +28,11 @@ class positional_inverted_index:
         terms = list(self.m_index.keys())
         terms.sort()
         return terms
+
+    def get_term_count(self):
+        return len(self.m_index)
+
+    # Prints out the information of a single key
+    def print_term_info(self, term):
+        for post in self.m_index[term]:
+            print ('<' + term + ', [ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>') 

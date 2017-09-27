@@ -55,8 +55,8 @@ def near(first_term, second_term, k):
 
     # list of documents that have first_term NEAR/k second_term
     doc_list = []
-    for post1 in corpus_dict[first_term]:
-        for post2 in corpus_dict[second_term]:
+    for post1 in index.get_index()[first_term]:
+        for post2 in index.get_index()[second_term]:
             # if the doc ID's are the same, check that document
             if (post1.get_document_id() == post2.get_document_id()):
                 for positions1 in post1.get_positions():
@@ -123,7 +123,7 @@ def main():
 
 # Tesing NEAR
     # use only with moby dick files for now
-    #print(near('sand', 'massacre', 1))
+    print(near('sand', 'massacre', 10))
 
     #print_term_info('whale')
 

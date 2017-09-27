@@ -1,37 +1,21 @@
 import os.path
 import json
 import string
+from positional_inverted_index import positional_inverted_index
 from posting import posting
+
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-
-# Binary Tree implementation
-from binarytree import tree, pprint, convert
 from query_parser import input_parser, wildcard_parser
-from KGramIndex import KGramIndex
 
 # The Index
-corpus_dict = {}
+index = positional_inverted_index()
+
 # List of vocab for terms in the corpus
 vocab = {}
-'''
-def add_term(term, documentID, position):
-    if (not term in corpus_dict):
-        term_posting = posting(documentID, position)
-        corpus_dict[term] = [term_posting]
-    else:
-        term_posting = posting(documentID, position)
-        corpus_dict[term].append(term_posting)
-'''
-def add_term(term, documentID, position, index):
-    if (not term in index):
-        term_posting = posting(documentID, position)
-        index[term] = [term_posting]
-    else:
-        term_posting = posting(documentID, position)
-        index[term].append(term_posting)
 
 # Maps out terms with positions in the document into a dictionary
+# {term : [positions]}
 # returns a dictionary of terms and a list of it positions 
 def find_positions(term_list):
     positions_dict = {}
@@ -42,45 +26,6 @@ def find_positions(term_list):
             positions_dict[term_list[i]].append(i)
     return positions_dict
 
-def get_postings(term):
-	if (term in corpus_dict):
-		return corpus_dict[term]
-	return []
-
-# Returns an alphabetized list of keys in corpus_dict
-def get_dictionary():
-    terms = list(corpus_dict.keys())
-    terms.sort()
-    return terms
-
-# Use index_file for .txt files
-'''
-def index_file(file_name, documentID):
-    stemmer = Porter2Stemmer()
-    punctuation = str.maketrans(dict.fromkeys(string.punctuation))
-    with open(file_name) as text_file:
-        file_lines = []
-
-        for line in text_file.readlines():
-            line = line.lower().translate(punctuation)
-            line_list = line.split(' ')
-
-            for term in line_list:
-                file_lines.append(term)
-
-        # remove \n and ''
-        file_lines = list(map(lambda s : s.strip(), file_lines))
-        file_lines = list(filter(lambda s : s != '', file_lines))
-
-        # Here we have a list of all terms as they appear in the text
-        term_positions = find_positions(file_lines)
-
-        # create postings for term
-        for key in term_positions:
-            add_term(key, documentID, term_positions[key])
-            if (stemmer.stem(key) != key):
-                add_term(stemmer.stem(key), documentID, term_positions[key])
-'''
 # Use this index_file for .json files
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
@@ -94,25 +39,24 @@ def index_file(file_name, documentID):
         term_positions = find_positions(body)
 
         for key in term_positions:
-            add_term(key, documentID, term_positions[key], corpus_dict)
-            if (stemmer.stem(key) != key):
-                add_term(stemmer.stem(key), documentID, term_positions[key], corpus_dict)
+            index.add_term(key, documentID, term_positions[key])
+            stemmed_term = stemmer.stem(key)
+            if (stemmed_term != key and not stemmed_term in index.m_index):
+                index.add_term(stemmer.stem(key), documentID, term_positions[key])
 
 def print_term_info(term):
-    for post in corpus_dict[term]:
+    for post in (index.get_index())[term]:
         print ('<' + term + ', [ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>')  
 
-# k: how many terms away is first_term from second_term
 # still need to be added
-# - working with same words for frist and second term
 def near(first_term, second_term, k):
     # query: first_term NEAR/k second_term
-    # corpus_dict[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
+    # index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
 
     # list of documents that have first_term NEAR/k second_term
     doc_list = []
-    for post1 in corpus_dict[first_term]:
-        for post2 in corpus_dict[second_term]:
+    for post1 in index.get_index()[first_term]:
+        for post2 in index.get_index()[second_term]:
             # if the doc ID's are the same, check that document
             if (post1.get_document_id() == post2.get_document_id()):
                 for positions1 in post1.get_positions():
@@ -120,20 +64,16 @@ def near(first_term, second_term, k):
                         distance = positions2 - positions1
                         # if (abs(distance) <= k):
                         if (distance <= k and not distance <= 0): 
+                            # TODO: ask neal
                             doc_list.append(post1.get_document_id())
 
     return doc_list
 
-def k_gram_test(term):
-    k = KGramIndex()
-    for i in range(1, 4):
-	    k.add_string(term, i)
-    print (k.get_kgrams())
-    return k.get_kgrams()
-
 def main():
     file_names = [] # Names of files
     documentID = 0
+
+    print (type(index))
 
     # Find all .json files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
@@ -146,7 +86,7 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
-    
+
     '''
     while 1:
         user_string = input("Please enter a word search:\n")
@@ -176,25 +116,17 @@ def main():
     #print (list(corpus_dict.keys())[0:20])
 
 # Dictionary alphabetized, prints terms only
-    print (get_dictionary())
-
-# Binary Tree test
-    #term_tree = convert((get_dictionary())[50:65])
-    #pprint(term_tree)
+    #print (index.get_dictionary())
 
 # Print each term and postings with it
-    #for key in corpus_dict:
-        #print_term_info(key)
+    for key in index.get_index():
+        print_term_info(key)
 
 # Tesing NEAR
     # use only with moby dick files for now
-    #print(near('sand', 'massacre', 1))
+    print(near('sand', 'massacre', 10))
 
     #print_term_info('whale')
-
-# KGram Testing
-    #for term in corpus_dict:
-        #k_gram_test(term)
 
 if __name__ == "__main__":
    	main()

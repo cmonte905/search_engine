@@ -3,8 +3,7 @@ import json
 import string
 from positional_inverted_index import positional_inverted_index
 from posting import posting
-from kgram_index import kgram_index
-from wildcard import wildcard
+from k_gram_index import k_gram_index
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -52,7 +51,7 @@ def open_file_content(file_name):
         article_data = json.load(json_file)
         print (article_data['title'] + '\n')
         print (article_data['body'] + '\n')
-        print (article_data['url'] + '\n')
+        print (article_data['url'])
 
 def vocab():
     print (index.get_dictionary())
@@ -77,15 +76,6 @@ def near(first_term, second_term, k):
 
     return doc_list
 
-def create_kgram(self, word, k):
-    kgram = []
-    for i in range(0, len(word)):
-        # starts at position i
-        if i + k > len(word):
-            break
-                
-        kgram.append(word[i: i + k])
-    return kgram
 
 # Testing of Kgrams
 def k_gram_test(term):
@@ -99,19 +89,6 @@ def main():
     file_names = [] # Names of files
     documentID = 0  # Document ID
 
-    k_list = {}
-
-    # Testing KGram
-    kgram = kgram_index()
-    kgram.add_string('hello', 3)
-    kgram.get_kgrams()
-
-
-    w = wildcard()
-    w.wildcard_parser('antidisestablishmentarianism')
-    w.print_dict()
-
-
     # Find all .json files in this directory
     directory = os.path.dirname(os.path.realpath(__file__))
     for file in os.listdir(directory):
@@ -123,7 +100,7 @@ def main():
         index_file(file, documentID)
         documentID = documentID + 1
         
-    #vocab()
+    vocab()
 
     '''
     while 1:

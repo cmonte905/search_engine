@@ -2,7 +2,7 @@ from KGramIndex import KGramIndex
 
 class wildcard:
     def __init__(self):
-        self.k = kgram_index()
+        self.k = KGramIndex()
         self.vocab = {}
 
     def wildcard_parser(self, word):
@@ -27,7 +27,7 @@ class wildcard:
                     self.vocab[t[j]] = [word]
 
     def print_dict(self):
-    	k = list(self.vocab.keys())
+    	k = self.vocab.keys()
     	for i in range(0, len(k)):
     		print(k[i] + ' ' + str(len(self.vocab[k[i]])))
     	'''

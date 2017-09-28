@@ -1,10 +1,13 @@
-class KGramIndex:
+# Only responsible for creating kgram based on input received
+
+class kgram_index:
 	def __init__(self):
-		self.k_gram_index = []
+		#self.k_gram_index = []
 		self.vocab = {}
 
-
+	# Creates the kgram tokens
 	def add_string(self, word, k):
+		k_gram_index = []
 		temp = ''
 		#new_k_gram = []
 		for i in range(0, len(word)):
@@ -15,8 +18,8 @@ class KGramIndex:
 					temp += word[j]
 			else:
 				break
-			self.k_gram_index.append(temp)
-		return self.k_gram_index
+			k_gram_index.append(temp)
+		return k_gram_index
 
 
 	def print_index(self):

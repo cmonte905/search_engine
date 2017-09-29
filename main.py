@@ -1,6 +1,7 @@
 from os import path, chdir, listdir
 import json
 import string
+import pprint
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
@@ -9,7 +10,7 @@ from kgram_index import kgram_index
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-from query_parser import input_parser, wildcard_parser
+from query import Query
 
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
@@ -88,7 +89,7 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-        print ('________________________________________________________________________________________________________________________________________________________________')
+        print ('________________________________________________________________________________________________')
         print (article_data['title'] + '\n')
         #print (article_data['body'] + '\n')
         #print (article_data['url'] + '\n')
@@ -133,7 +134,7 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
-        
+
     for word in index.get_dictionary():
         w = ('$' + word + '$')
         for token in vocab:
@@ -141,8 +142,8 @@ def main():
                 vocab[token].append(word)
 
 
-    for token in vocab:
-        print (token, str(vocab[token]))
+    # for token in vocab:
+    #     print (token, str(vocab[token]))
 
 
 
@@ -155,30 +156,36 @@ def main():
     '''
     #vocab()
 
-    '''
+
+
     while 1:
+
         user_string = input("Please enter a word search:\n")
         if ':' in user_string:
             print (user_string)
             if ':q' in user_string:
                 exit()
             if ':stem' in user_string:
-                print ("Will be stemming the token")
-                print (user_string.split(" ")[1])
+                stemmer = Porter2Stemmer()
+                print("Will be stemming the token")
+                print(stemmer.stem(user_string.split(" ")[1]))
             if ':index' in user_string:
-                print ('Will be indexing folder')
+                print('Will be indexing folder')
             if ':vocab' in user_string:
-                print ('Will be spitting out words')
+                pp = pprint.PrettyPrinter(indent=4)
+                pp.pprint(index.get_dictionary())
+                print(index.get_term_count())
+                print('Will be spitting out words')
         elif '*' in user_string:
             print("This will get sent of to the wildcard class")
-            wildcard_parser(user_string)
         else:
-            input_parser(user_string)
-            postings = get_postings(user_string)
-            if len(postings) > 0:
-                for id in postings:
-                    ('document' + str(id))
-    '''
+            q = Query(index.get_index())
+            q_list =q.query_parser(user_string)
+
+
+
+
+
 
     # Print all keys in index
     # print (index.get_dictionary())
@@ -198,7 +205,7 @@ def main():
 
     # K Gram test
     #for term in index.get_index():
-        #k_gram_test(term)  
+    #k_gram_test(term)
 
 if __name__ == "__main__":
     main()

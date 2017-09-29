@@ -1,6 +1,8 @@
-import os.path
+from os import path, chdir, listdir
 import json
 import string
+
+# Custom Classes
 from positional_inverted_index import positional_inverted_index
 from posting import posting
 from k_gram_index import k_gram_index
@@ -49,9 +51,10 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name) as json_file:
         article_data = json.load(json_file)
+        print ('________________________________________________________________________________________________________________________________________________________________')
         print (article_data['title'] + '\n')
-        print (article_data['body'] + '\n')
-        print (article_data['url'])
+        #print (article_data['body'] + '\n')
+        #print (article_data['url'] + '\n')
 
 def vocab():
     print (index.get_dictionary())
@@ -90,8 +93,11 @@ def main():
     documentID = 0  # Document ID
 
     # Find all .json files in this directory
-    directory = os.path.dirname(os.path.realpath(__file__))
-    for file in os.listdir(directory):
+    #directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
+    directory = path.dirname(path.realpath(__file__))
+    #chdir(directory)
+
+    for file in listdir(directory):
         if file.endswith('.json'):
             file_names.append(str(file))
     
@@ -100,7 +106,13 @@ def main():
         index_file(file, documentID)
         documentID = documentID + 1
         
-    vocab()
+
+        
+    #vocab()
+
+    print (index.get_dictionary())
+
+
 
     '''
     while 1:
@@ -136,13 +148,13 @@ def main():
     #for key in index.get_index():
         #index.print_term_info(key)
 
-# Testing NEAR
+    # Testing NEAR
     # use only with moby dick files for now
     # print(near('sand', 'massacre', 10))
 
     #print_term_info('whale')
 
-# K Gram test
+    # K Gram test
     #for term in index.get_index():
         #k_gram_test(term)
 

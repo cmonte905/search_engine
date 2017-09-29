@@ -6,6 +6,7 @@ import string
 from positional_inverted_index import positional_inverted_index
 from posting import posting
 from kgram_index import kgram_index
+from wildcard import wildcard
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -16,6 +17,7 @@ from query_parser import input_parser, wildcard_parser
 index = positional_inverted_index()
 
 # List of vocab for terms in the corpus
+# Dictionary <String : Set<String>>
 vocab = {}
 
 # Maps out terms with positions in the document into a dictionary
@@ -35,9 +37,11 @@ def find_positions(term_list):
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
     punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+    k = kgram_index()
     try:
         with open(file_name) as json_file:
             article_data = json.load(json_file)
+
 
             body = (article_data['body']).lower().translate(punctuation).split(' ')
             body = list(filter(lambda w: w != '', map(lambda s: s.strip(), body)))
@@ -45,12 +49,11 @@ def index_file(file_name, documentID):
             term_positions = find_positions(body)
 
             for key in term_positions:
-
+                
                 # KGram stuff
-                k = kgram_index()
                 kgram_list = []
 
-                # rip magic number, let it be por favor, jesus will forgive us
+                # develop a list of kgram tokens for one specific term
                 for i in range(1, 4):
                     if i is 1:
                         kgram_list.extend(k.create_kgram(key, i))
@@ -59,26 +62,27 @@ def index_file(file_name, documentID):
                         kgram_list.extend(k.create_kgram(s, i))
 
 
+                # Shove each of those tokens into the grand vocab dictionary
                 for token in kgram_list:
-                    if token in vocab and not key in vocab[token]:
-                        #vocab[token].append()
-                        continue
+                    if token in vocab:
+                        vocab[token].add(key)
                     else:
-                        vocab[token] = []
+                        vocab[token] = set([key])
+
 
                 '''
-                s = ('$' + key + '$')
+                # we shouldn't need this 
                 for token in vocab:
-                    if token in s and not key in vocab[token]:
+                    if token in key:
                         vocab[token].append(key)
                 '''
-                # print (kgram_list)
 
-
-                stemmed_term = stemmer.stem(key)
-                index.add_term(key, documentID, term_positions[key])
-                if stemmed_term != key and not stemmed_term in index.m_index:
-                    index.add_term(stemmed_term, documentID, term_positions[key])
+            for key in term_positions:
+                #stemmed_term = stemmer.stem(key)
+                #index.add_term(key, documentID, term_positions[key])
+                index.add_term(stemmer.stem(key), documentID, term_positions[key])
+                #if stemmed_term != key and not stemmed_term in index.m_index:
+                    #index.add_term(stemmed_term, documentID, term_positions[key])
     except FileNotFoundError as e:
         i = 0
         print(e)
@@ -93,28 +97,70 @@ def open_file_content(file_name):
         #print (article_data['body'] + '\n')
         #print (article_data['url'] + '\n')
 
+
 def near(first_term, second_term, k):
     # query: first_term NEAR/k second_term
     # index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
     # list of documents that have first_term NEAR/k second_term
+    #post_list = [(post_1, post_2) for post_1 in index.get_index()[first_term] for post_2 in index.get_index()[second_term] if post_1.get_document_id() == post_2.get_document_id()]
+    #return [(pos_1, pos_2) for pos_1 in post_1.get_positions() for pos_2 in post_2.get_positions() if (pos_2 - pos_1 <= k) and not (distance <= 0)]
+    
     doc_list = []
-    for post1 in index.get_index()[first_term]:
-        for post2 in index.get_index()[second_term]:
+    for post_1 in index.get_index()[first_term]:
+        for post_2 in index.get_index()[second_term]:
             # if the doc ID's are the same, check that document
-            if (post1.get_document_id() == post2.get_document_id()):
-                for positions1 in post1.get_positions():
-                    for positions2 in post2.get_positions():
-                        distance = positions2 - positions1
+            if (post_1.get_document_id() == post_2.get_document_id()):
+                ID = post_1.get_document_id()
+                for positions_1 in post_1.get_positions():
+                    for positions_2 in post_2.get_positions():
+                        distance = positions_2 - positions_1
                         # if (abs(distance) <= k):
-                        if (distance <= k and not distance <= 0):
-                            doc_list.append(post1.get_document_id())
+                        if (distance <= k and not distance <= 0 and not ID in doc_list):
+                            doc_list.append(ID)
 
     return doc_list
+    
+# Wild card input
+# word_input: the user input of a wild card. 
+# EX:   land*cape
+#       he*lo
+# 
+def wild(word_input):
+    kg = kgram_index()
+    w = wildcard()
+
+    ktokens = []
+    wildcard_tokens = w.wildcard_parser(word_input)
+    
+    for token in wildcard_tokens:
+        k = 0
+        if len(token) > 3:
+            k = 3
+        else:
+            k = len(token)
+        ktokens.extend(kg.create_kgram(token, k))
+
+    ktokens[:] = [x for x in ktokens if x != '$']
+
+    print (ktokens)
+
+    canidate_lists = []
+
+    for token in ktokens:
+        canidate_lists.append(vocab[token])
+        print (token, list(vocab[token]))
+
+    print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
+
+    return set(canidate_lists[0].intersection(*canidate_lists[0:]))
 
 
 def main():
     file_names = []  # Names of files
     documentID = 0  # Document ID
+
+    # Instances
+    w = wildcard()
 
     # Find all .json files in this directory
     #directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
@@ -133,18 +179,13 @@ def main():
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
-        
-    for word in index.get_dictionary():
-        w = ('$' + word + '$')
-        for token in vocab:
-            if token in w:
-                vocab[token].append(word)
-
-
+    
+    # Print every token in vocab and the words that contain that token
     for token in vocab:
         print (token, str(vocab[token]))
 
-
+    # Wildcard and Kgram tesing
+    #wild('m**sacre')
 
     '''
     while 1:
@@ -191,14 +232,11 @@ def main():
     #   index.print_term_info(key)
 
     # Testing NEAR
-    # use only with moby dick files for now
-    # print(near('sand', 'massacre', 10))
+    # sprint(near('sand', 'massacre', 10))
 
     # print_term_info('whale')
 
-    # K Gram test
-    #for term in index.get_index():
-        #k_gram_test(term)  
+
 
 if __name__ == "__main__":
     main()

@@ -5,29 +5,29 @@ import string
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
 from posting import posting
-from k_gram_index import k_gram_index
+from kgram_index import kgram_index
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
 from query_parser import input_parser, wildcard_parser
 
 # The Index
+# { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
 index = positional_inverted_index()
 
 # List of vocab for terms in the corpus
 vocab = {}
 
-
 # Maps out terms with positions in the document into a dictionary
 # {term : [positions]}
-# returns a dictionary of terms and a list of it positions 
+# returns a dictionary of term keys and list of positions as value
 def find_positions(term_list):
     positions_dict = {}
     for i in range(0, len(term_list)):
-        if (not term_list[i] in positions_dict):
-            positions_dict[term_list[i]] = [i]
-        else:
+        if term_list[i] in positions_dict:
             positions_dict[term_list[i]].append(i)
+        else:
+            positions_dict[term_list[i]] = [i]
     return positions_dict
 
 
@@ -45,10 +45,40 @@ def index_file(file_name, documentID):
             term_positions = find_positions(body)
 
             for key in term_positions:
-                index.add_term(key, documentID, term_positions[key])
+
+                # KGram stuff
+                k = kgram_index()
+                kgram_list = []
+
+                # rip magic number, let it be por favor, jesus will forgive us
+                for i in range(1, 4):
+                    if i is 1:
+                        kgram_list.extend(k.create_kgram(key, i))
+                    else: 
+                        s = ('$' + key + '$')
+                        kgram_list.extend(k.create_kgram(s, i))
+
+
+                for token in kgram_list:
+                    if token in vocab and not key in vocab[token]:
+                        #vocab[token].append()
+                        continue
+                    else:
+                        vocab[token] = []
+
+                '''
+                s = ('$' + key + '$')
+                for token in vocab:
+                    if token in s and not key in vocab[token]:
+                        vocab[token].append(key)
+                '''
+                # print (kgram_list)
+
+
                 stemmed_term = stemmer.stem(key)
+                index.add_term(key, documentID, term_positions[key])
                 if stemmed_term != key and not stemmed_term in index.m_index:
-                    index.add_term(stemmer.stem(key), documentID, term_positions[key])
+                    index.add_term(stemmed_term, documentID, term_positions[key])
     except FileNotFoundError as e:
         i = 0
         print(e)
@@ -58,22 +88,10 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-<<<<<<< HEAD
         print ('________________________________________________________________________________________________________________________________________________________________')
         print (article_data['title'] + '\n')
         #print (article_data['body'] + '\n')
         #print (article_data['url'] + '\n')
-=======
-        print(article_data['title'] + '\n')
-        print(article_data['body'] + '\n')
-        print(article_data['url'])
-
->>>>>>> origin/master
-
-def vocab():
-    print(index.get_dictionary())
-    print('Term Count: ' + str(index.get_term_count()))
-
 
 def near(first_term, second_term, k):
     # query: first_term NEAR/k second_term
@@ -89,19 +107,9 @@ def near(first_term, second_term, k):
                         distance = positions2 - positions1
                         # if (abs(distance) <= k):
                         if (distance <= k and not distance <= 0):
-                            # TODO: ask neal
                             doc_list.append(post1.get_document_id())
 
     return doc_list
-
-
-# Testing of Kgrams
-def k_gram_test(term):
-    k = k_gram_index()
-    for i in range(1, 4):
-        k.add_string(term, i)
-    print(k.get_kgrams())
-    return k.get_kgrams()
 
 
 def main():
@@ -109,39 +117,43 @@ def main():
     documentID = 0  # Document ID
 
     # Find all .json files in this directory
-<<<<<<< HEAD
     #directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     directory = path.dirname(path.realpath(__file__))
     #chdir(directory)
-
+    '''
     for file in listdir(directory):
-=======
-    directory = os.path.dirname(os.path.realpath(__file__)) + '/corpus/archbox/'
+        directory = path.dirname(os.path.realpath(__file__))
     print(directory)
-
-    for file in os.listdir(directory):
->>>>>>> origin/master
+    '''
+    for file in listdir(directory):
         if file.endswith('.json'):
             file_names.append(str(file))
-    print(len(file_names))
 
     # Index each file and mark its Document ID
     for file in file_names:
         index_file(file, documentID)
         documentID = documentID + 1
-<<<<<<< HEAD
         
+    for word in index.get_dictionary():
+        w = ('$' + word + '$')
+        for token in vocab:
+            if token in w:
+                vocab[token].append(word)
 
-        
+
+    for token in vocab:
+        print (token, str(vocab[token]))
+
+
+
+    '''
+    while 1:
+        first = raw_input('Enter first word: ')
+        second = raw_input('Enter second word: ')
+
+        near()
+    '''
     #vocab()
-
-    print (index.get_dictionary())
-
-
-=======
-
-    vocab()
->>>>>>> origin/master
 
     '''
     while 1:
@@ -168,37 +180,25 @@ def main():
                     ('document' + str(id))
     '''
 
+    # Print all keys in index
+    # print (index.get_dictionary())
+
     # print out the postings for each term in corpus
     # print (list(corpus_dict.keys())[0:20])
 
-    # Dictionary alphabetized, prints terms only
-    # print (index.get_dictionary())
     # Print each term and postings with it
-    # for key in index.get_index():
-    # index.print_term_info(key)
+    #for key in index.get_index():
+    #   index.print_term_info(key)
 
-
-<<<<<<< HEAD
     # Testing NEAR
     # use only with moby dick files for now
     # print(near('sand', 'massacre', 10))
-=======
-# Testing NEAR
-# use only with moby dick files for now
-# print(near('sand', 'massacre', 10))
->>>>>>> origin/master
 
-# print_term_info('whale')
+    # print_term_info('whale')
 
-<<<<<<< HEAD
     # K Gram test
     #for term in index.get_index():
-        #k_gram_test(term)
-=======
-# K Gram test
-# for term in index.get_index():
-# k_gram_test(term)
->>>>>>> origin/master
+        #k_gram_test(term)  
 
 if __name__ == "__main__":
     main()

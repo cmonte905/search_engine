@@ -1,7 +1,9 @@
 from posting import posting
 
+# Class for storing all functionality of a working index
 class positional_inverted_index:
 
+    # Constuctor for positional_inverted_index
     def __init__(self):
         self.m_index = {}
 
@@ -29,10 +31,11 @@ class positional_inverted_index:
         terms.sort()
         return terms
 
+    # return how many terms are in the index
     def get_term_count(self):
         return len(self.m_index)
 
-    # Prints out the information of a single key
+    # Prints out all the postings of a key
     def print_term_info(self, term):
         for post in self.m_index[term]:
             print ('<' + term + ', [ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>') 

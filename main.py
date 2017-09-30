@@ -2,6 +2,7 @@ from os import path, chdir, listdir
 import json
 import string
 import pprint
+import re
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
@@ -18,6 +19,8 @@ index = positional_inverted_index()
 
 # List of vocab for terms in the corpus
 vocab = {}
+
+pp = pprint.PrettyPrinter(indent=4)
 
 # Maps out terms with positions in the document into a dictionary
 # {term : [positions]}
@@ -91,8 +94,9 @@ def open_file_content(file_name):
         article_data = json.load(json_file)
         print ('________________________________________________________________________________________________')
         print (article_data['title'] + '\n')
-        #print (article_data['body'] + '\n')
-        #print (article_data['url'] + '\n')
+        # print (article_data['body'] + '\n')
+        # print (article_data['url'] + '\n')
+
 
 def near(first_term, second_term, k):
     # query: first_term NEAR/k second_term
@@ -118,9 +122,9 @@ def main():
     documentID = 0  # Document ID
 
     # Find all .json files in this directory
-    #directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
+    # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     directory = path.dirname(path.realpath(__file__))
-    #chdir(directory)
+    # chdir(directory)
     '''
     for file in listdir(directory):
         directory = path.dirname(os.path.realpath(__file__))
@@ -132,8 +136,8 @@ def main():
 
     # Index each file and mark its Document ID
     for file in file_names:
-        index_file(file, documentID)
-        documentID = documentID + 1
+        index_file(file, re.findall(r'\d+', file)[0])
+
 
     for word in index.get_dictionary():
         w = ('$' + word + '$')

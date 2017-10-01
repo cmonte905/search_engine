@@ -166,12 +166,12 @@ def main():
 
         user_string = input("Please enter a word search:\n")
         if ':' in user_string:
-            print (user_string)
             if ':q' in user_string:
                 exit()
             if ':stem' in user_string:
                 stemmer = Porter2Stemmer()
                 print("Will be stemming the token")
+                print(user_string.split(" ")[1])
                 print(stemmer.stem(user_string.split(" ")[1]))
             if ':index' in user_string:
                 print('Will be indexing folder')
@@ -184,8 +184,8 @@ def main():
             print("This will get sent of to the wildcard class")
         else:
             q = Query(index.get_index())
-            q_list =q.query_parser(user_string)
-
+            q_list = q.query_parser(user_string)
+            print(q_list,'\n', len(q_list[0]))
 
 
 

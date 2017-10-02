@@ -21,8 +21,8 @@ index = positional_inverted_index()
 vocab = {}
 
 # Maps out terms with positions in the document into a dictionary
-# {term : [positions]}
 # returns a dictionary of term keys and list of positions as value
+# {term : [positions]}
 def find_positions(term_list):
     positions_dict = {}
     for i in range(0, len(term_list)):
@@ -30,12 +30,12 @@ def find_positions(term_list):
         # Hyphened words
         # Because they all share the same position when split
         if '-' in term_list[i]:
-            
+
             hyphened_word_parts = term_list[i].split('-')
             hyphened_word = term_list[i].replace('-', '')
             hyphened_word_parts.append(hyphened_word)
 
-            for word in h:
+            for word in hyphened_word_parts:
                 if word in positions_dict:
                     positions_dict[word].append(i)
                 else:
@@ -46,17 +46,6 @@ def find_positions(term_list):
                 positions_dict[term_list[i]].append(i)
             else:
                 positions_dict[term_list[i]] = [i]
-
-    return positions_dict
-
-def find_positions_sets(term_list):
-    positions_dict = {}
-    for i in range(0, len(term_list)):
-
-        if term_list[i] in positions_dict:
-            positions_dict[term_list[i]].append(i)
-        else:
-            positions_dict[term_list[i]] = [i]
 
     return positions_dict
 
@@ -138,7 +127,14 @@ def near(first_term, second_term, k):
     #post_list = [(post_1, post_2) for post_1 in index.get_index()[first_term] for post_2 in index.get_index()[second_term] if post_1.get_document_id() == post_2.get_document_id()]
     #return [(pos_1, pos_2) for pos_1 in post_1.get_positions() for pos_2 in post_2.get_positions() if (pos_2 - pos_1 <= k) and not (distance <= 0)]
     
-    doc_list = []
+    #doc_list = []
+    doc_list = set()
+
+    # stemming words first, can remove this later
+    stemmer = Porter2Stemmer()
+    first_term = stemmer.stem(first_term)
+    second_term = stemmer.stem(second_term)
+
     for post_1 in index.get_index()[first_term]:
         for post_2 in index.get_index()[second_term]:
             # if the doc ID's are the same, check that document
@@ -148,9 +144,14 @@ def near(first_term, second_term, k):
                     for positions_2 in post_2.get_positions():
                         distance = positions_2 - positions_1
                         # if (abs(distance) <= k):
-                        if (distance <= k and not distance <= 0 and not ID in doc_list):
-                            doc_list.append(ID)
 
+                        # List way
+                        #if (distance <= k and not distance <= 0 and not ID in doc_list):
+                        #    doc_list.append(ID)
+
+                        # Using a set for no duplicate docs ID's
+                        if (distance <= k and not distance <= 0):
+                            doc_list.add(ID)
     return doc_list
     
 # Wild card input
@@ -219,7 +220,7 @@ def main():
         #print (token, str(vocab[token]))
 
     # Wildcard and Kgram tesing
-    #wild('m**sacre')
+    #wild('n*t')
 
     '''
     while 1:
@@ -256,17 +257,18 @@ def main():
     '''
 
     # Print all keys in index
-    # print (index.get_dictionary())
+    #print (index.get_dictionary())
 
     # print out the postings for each term in corpus
     # print (list(corpus_dict.keys())[0:20])
 
     # Print each term and postings with it
-    for key in index.get_index():
-       index.print_term_info(key)
+    #for key in index.get_index():
+       #index.print_term_info(key)
 
     # Testing NEAR
-    # sprint(near('sand', 'massacre', 10))
+    # stem word before doing it
+    print(near('sand', 'massacre', 10))
 
     # print_term_info('whale')
 

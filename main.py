@@ -184,8 +184,9 @@ def main():
             q = Query(index.get_index())
             q_list = q.query_parser(user_string)
             if not len(q_list) == 0:
-                list.intersection(q_list)
-                print(q_list, '\n', len(q_list))
+                print('Postings list : ', q_list, '\n', len(q_list))
+            else:
+                print('There is no document matched your query')
 
 
 

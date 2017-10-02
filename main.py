@@ -227,11 +227,11 @@ def main():
         #print (token, str(vocab[token]))
 
 
-    for word in index.get_dictionary():
-        w = ('$' + word + '$')
-        for token in vocab:
-            if token in w:
-                vocab[token].append(word)
+    # for word in index.get_dictionary():
+    #     w = ('$' + word + '$')
+    #     for token in vocab:
+    #         if token in w:
+    #             vocab[token].append(word)
 
     # for token in vocab:
     #     print (token, str(vocab[token]))

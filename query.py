@@ -30,7 +30,7 @@ class Query:
         query_list.append(split(r'\s+', user_string.lower().rstrip().lstrip()))
 
         # print(query_list)
-        if not len(query_list[1]) == 0:  # For one word queries, gets info from postings
+        if not len(query_list[1]) == 0:  # For non-phrase queries, gets info from postings
             posting_lists = (self.query_process(query_list[1]))
         if not len(query_list[0]) == 0:  # For Phrase queries
             self.phrase_process(query_list[0])

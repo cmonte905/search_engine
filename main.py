@@ -10,13 +10,13 @@ from wildcard import wildcard
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-from query_parser import input_parser, wildcard_parser
+#from query_parser import input_parser, wildcard_parser
 
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
 index = positional_inverted_index()
 
-# List of vocab for terms in the corpus
+# List of vocab tokens for terms in the corpus
 # Dictionary <String : Set<String>>
 vocab = {}
 
@@ -26,22 +26,55 @@ vocab = {}
 def find_positions(term_list):
     positions_dict = {}
     for i in range(0, len(term_list)):
+
+        # Hyphened words
+        # Because they all share the same position when split
+        if '-' in term_list[i]:
+            
+            hyphened_word_parts = term_list[i].split('-')
+            hyphened_word = term_list[i].replace('-', '')
+            hyphened_word_parts.append(hyphened_word)
+
+            for word in h:
+                if word in positions_dict:
+                    positions_dict[word].append(i)
+                else:
+                    positions_dict[word] = [i]
+        else:
+
+            if term_list[i] in positions_dict:
+                positions_dict[term_list[i]].append(i)
+            else:
+                positions_dict[term_list[i]] = [i]
+
+    return positions_dict
+
+def find_positions_sets(term_list):
+    positions_dict = {}
+    for i in range(0, len(term_list)):
+
         if term_list[i] in positions_dict:
             positions_dict[term_list[i]].append(i)
         else:
             positions_dict[term_list[i]] = [i]
+
     return positions_dict
 
 
 # Use this index_file for .json files
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
-    punctuation = str.maketrans(dict.fromkeys(string.punctuation))
     k = kgram_index()
+    #punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+
+    # Dealing with punctuation
+    p = dict.fromkeys(string.punctuation)
+    p.pop('-') # we need to deal with hyphens
+    punctuation = str.maketrans(p)
+
     try:
         with open(file_name) as json_file:
             article_data = json.load(json_file)
-
 
             body = (article_data['body']).lower().translate(punctuation).split(' ')
             body = list(filter(lambda w: w != '', map(lambda s: s.strip(), body)))
@@ -140,6 +173,7 @@ def wild(word_input):
             k = len(token)
         ktokens.extend(kg.create_kgram(token, k))
 
+    # remove '$' from tokens
     ktokens[:] = [x for x in ktokens if x != '$']
 
     print (ktokens)
@@ -152,7 +186,7 @@ def wild(word_input):
 
     print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
 
-    return set(canidate_lists[0].intersection(*canidate_lists[0:]))
+    return set(canidate_lists[0].intersection(*canidate_lists[1:]))
 
 
 def main():
@@ -181,8 +215,8 @@ def main():
         documentID = documentID + 1
     
     # Print every token in vocab and the words that contain that token
-    for token in vocab:
-        print (token, str(vocab[token]))
+    #for token in vocab:
+        #print (token, str(vocab[token]))
 
     # Wildcard and Kgram tesing
     #wild('m**sacre')
@@ -228,8 +262,8 @@ def main():
     # print (list(corpus_dict.keys())[0:20])
 
     # Print each term and postings with it
-    #for key in index.get_index():
-    #   index.print_term_info(key)
+    for key in index.get_index():
+       index.print_term_info(key)
 
     # Testing NEAR
     # sprint(near('sand', 'massacre', 10))

@@ -1,6 +1,8 @@
 from os import path, chdir, listdir
 import json
 import string
+import pprint
+import re
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
@@ -10,7 +12,9 @@ from wildcard import wildcard
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-#from query_parser import input_parser, wildcard_parser
+
+from query import Query
+
 
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
@@ -19,6 +23,9 @@ index = positional_inverted_index()
 # List of vocab tokens for terms in the corpus
 # Dictionary <String : Set<String>>
 vocab = {}
+
+pp = pprint.PrettyPrinter(indent=4)
+
 
 # Maps out terms with positions in the document into a dictionary
 # returns a dictionary of term keys and list of positions as value
@@ -79,15 +86,15 @@ def index_file(file_name, documentID):
                 for i in range(1, 4):
                     if i is 1:
                         kgram_list.extend(k.create_kgram(key, i))
-                    else: 
+                    else:
                         s = ('$' + key + '$')
                         kgram_list.extend(k.create_kgram(s, i))
-
 
                 # Shove each of those tokens into the grand vocab dictionary
                 for token in kgram_list:
                     if token in vocab:
                         vocab[token].add(key)
+
                     else:
                         vocab[token] = set([key])
 
@@ -114,10 +121,11 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-        print ('________________________________________________________________________________________________________________________________________________________________')
-        print (article_data['title'] + '\n')
-        #print (article_data['body'] + '\n')
-        #print (article_data['url'] + '\n')
+        print('________________________________________________________________________________________________')
+        print(article_data['title'] + '\n')
+        # print (article_data['body'] + '\n')
+        # print (article_data['url'] + '\n')
+
 
 
 def near(first_term, second_term, k):
@@ -198,9 +206,9 @@ def main():
     w = wildcard()
 
     # Find all .json files in this directory
-    #directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
+    # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     directory = path.dirname(path.realpath(__file__))
-    #chdir(directory)
+    # chdir(directory)
     '''
     for file in listdir(directory):
         directory = path.dirname(os.path.realpath(__file__))
@@ -212,12 +220,21 @@ def main():
 
     # Index each file and mark its Document ID
     for file in file_names:
-        index_file(file, documentID)
-        documentID = documentID + 1
-    
+        index_file(file, re.findall(r'\d+', file)[0])
     # Print every token in vocab and the words that contain that token
     #for token in vocab:
         #print (token, str(vocab[token]))
+
+
+    for word in index.get_dictionary():
+        w = ('$' + word + '$')
+        for token in vocab:
+            if token in w:
+                vocab[token].append(word)
+
+    # for token in vocab:
+    #     print (token, str(vocab[token]))
+
 
     # Wildcard and Kgram tesing
     #wild('n*t')
@@ -229,49 +246,64 @@ def main():
 
         near()
     '''
-    #vocab()
+    # vocab()
 
-    '''
+
+
     while 1:
+
         user_string = input("Please enter a word search:\n")
         if ':' in user_string:
-            print (user_string)
             if ':q' in user_string:
                 exit()
             if ':stem' in user_string:
-                print ("Will be stemming the token")
-                print (user_string.split(" ")[1])
+                stemmer = Porter2Stemmer()
+                print("Will be stemming the token")
+                print(user_string.split(" ")[1])
+                print(stemmer.stem(user_string.split(" ")[1]))
             if ':index' in user_string:
-                print ('Will be indexing folder')
+                print('Will be indexing folder')
             if ':vocab' in user_string:
-                print ('Will be spitting out words')
+                pp = pprint.PrettyPrinter(indent=4)
+                pp.pprint(index.get_dictionary())
+                print(index.get_term_count())
+                print('Will be spitting out words')
         elif '*' in user_string:
             print("This will get sent of to the wildcard class")
-            wildcard_parser(user_string)
         else:
-            input_parser(user_string)
-            postings = get_postings(user_string)
-            if len(postings) > 0:
-                for id in postings:
-                    ('document' + str(id))
-    '''
+            q = Query(index.get_index())
+            q_list = q.query_parser(user_string)
+            if not len(q_list) == 0:
+                print('Postings list : ', q_list, '\n', len(q_list))
+            else:
+                print('There is no document matched your query')
 
+
+
+
+
+            # Print all keys in index
+            # print (index.get_dictionary())
     # Print all keys in index
     #print (index.get_dictionary())
 
-    # print out the postings for each term in corpus
-    # print (list(corpus_dict.keys())[0:20])
 
-    # Print each term and postings with it
-    for key in index.get_index():
-       index.print_term_info(key)
+            # Print each term and postings with it
+            # for key in index.get_index():
+            #   index.print_term_info(key)
+
+        # Print each term and postings with it
+        for key in index.get_index():
+            index.print_term_info(key)
 
     # Testing NEAR
     # stem word before doing it
     # print(near('sand', 'massacre', 10))
 
-    # print_term_info('whale')
 
+            # K Gram test
+            # for term in index.get_index():
+            # k_gram_test(term)
 
 
 if __name__ == "__main__":

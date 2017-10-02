@@ -263,12 +263,12 @@ def main():
     # print (list(corpus_dict.keys())[0:20])
 
     # Print each term and postings with it
-    #for key in index.get_index():
-       #index.print_term_info(key)
+    for key in index.get_index():
+       index.print_term_info(key)
 
     # Testing NEAR
     # stem word before doing it
-    print(near('sand', 'massacre', 10))
+    # print(near('sand', 'massacre', 10))
 
     # print_term_info('whale')
 

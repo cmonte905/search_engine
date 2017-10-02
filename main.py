@@ -22,6 +22,7 @@ vocab = {}
 
 pp = pprint.PrettyPrinter(indent=4)
 
+
 # Maps out terms with positions in the document into a dictionary
 # {term : [positions]}
 # returns a dictionary of term keys and list of positions as value
@@ -58,14 +59,13 @@ def index_file(file_name, documentID):
                 for i in range(1, 4):
                     if i is 1:
                         kgram_list.extend(k.create_kgram(key, i))
-                    else: 
+                    else:
                         s = ('$' + key + '$')
                         kgram_list.extend(k.create_kgram(s, i))
 
-
                 for token in kgram_list:
                     if token in vocab and not key in vocab[token]:
-                        #vocab[token].append()
+                        # vocab[token].append()
                         continue
                     else:
                         vocab[token] = []
@@ -92,8 +92,8 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-        print ('________________________________________________________________________________________________')
-        print (article_data['title'] + '\n')
+        print('________________________________________________________________________________________________')
+        print(article_data['title'] + '\n')
         # print (article_data['body'] + '\n')
         # print (article_data['url'] + '\n')
 
@@ -138,13 +138,11 @@ def main():
     for file in file_names:
         index_file(file, re.findall(r'\d+', file)[0])
 
-
     for word in index.get_dictionary():
         w = ('$' + word + '$')
         for token in vocab:
             if token in w:
                 vocab[token].append(word)
-
 
     # for token in vocab:
     #     print (token, str(vocab[token]))
@@ -158,7 +156,7 @@ def main():
 
         near()
     '''
-    #vocab()
+    # vocab()
 
 
 
@@ -185,31 +183,34 @@ def main():
         else:
             q = Query(index.get_index())
             q_list = q.query_parser(user_string)
-            print(q_list,'\n', len(q_list[0]))
+            if not len(q_list) == 0:
+                list.intersection(q_list)
+                print(q_list, '\n', len(q_list))
 
 
 
 
 
-    # Print all keys in index
-    # print (index.get_dictionary())
+            # Print all keys in index
+            # print (index.get_dictionary())
 
-    # print out the postings for each term in corpus
-    # print (list(corpus_dict.keys())[0:20])
+            # print out the postings for each term in corpus
+            # print (list(corpus_dict.keys())[0:20])
 
-    # Print each term and postings with it
-    #for key in index.get_index():
-    #   index.print_term_info(key)
+            # Print each term and postings with it
+            # for key in index.get_index():
+            #   index.print_term_info(key)
 
-    # Testing NEAR
-    # use only with moby dick files for now
-    # print(near('sand', 'massacre', 10))
+            # Testing NEAR
+            # use only with moby dick files for now
+            # print(near('sand', 'massacre', 10))
 
-    # print_term_info('whale')
+            # print_term_info('whale')
 
-    # K Gram test
-    #for term in index.get_index():
-    #k_gram_test(term)
+            # K Gram test
+            # for term in index.get_index():
+            # k_gram_test(term)
+
 
 if __name__ == "__main__":
     main()

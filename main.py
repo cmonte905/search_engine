@@ -190,8 +190,9 @@ def wild(word_input):
     canidate_lists = []
 
     for token in ktokens:
-        canidate_lists.append(vocab[token])
-        print (token, list(vocab[token]))
+        if token in vocab:
+            canidate_lists.append(vocab[token])
+            print (token, list(vocab[token]))
 
     print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
 
@@ -237,7 +238,7 @@ def main():
 
 
     # Wildcard and Kgram tesing
-    #wild('n*t')
+    wild('**acre')
 
     '''
     while 1:
@@ -288,6 +289,7 @@ def main():
     #print (index.get_dictionary())
 
 
+
             # Print each term and postings with it
             # for key in index.get_index():
             #   index.print_term_info(key)
@@ -295,6 +297,7 @@ def main():
         # Print each term and postings with it
         for key in index.get_index():
             index.print_term_info(key)
+
 
     # Testing NEAR
     # stem word before doing it

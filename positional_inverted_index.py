@@ -42,3 +42,10 @@ class positional_inverted_index:
 
     def clean(self):
         self.m_index = {}
+
+    def get_all_doc_ids(self, term):
+        id_list = set()
+        for post in self.m_index[term]:
+            id_list.add(post.get_document_id())
+
+        return id_list

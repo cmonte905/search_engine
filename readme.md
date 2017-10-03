@@ -3,6 +3,7 @@ Main project for Professor Neal "NealDT" Terrell at CSULB, class CECS 429. Writt
 
 ## TODO 
 
+## WE DONE FUCKED UP, HAVE TO MAKE THIS SHIT GO FASTER!!!!!
 #### Requirements:
 Requirement | Description | Status | Person Responsible
 -----|-----|-----|-----|

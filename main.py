@@ -99,14 +99,6 @@ def index_file(file_name, documentID):
                     else:
                         vocab[token] = set([key])
 
-
-                '''
-                # we shouldn't need this 
-                for token in vocab:
-                    if token in key:
-                        vocab[token].append(key)
-                '''
-
             for key in term_positions:
                 #stemmed_term = stemmer.stem(key)
                 #index.add_term(key, documentID, term_positions[key])
@@ -117,6 +109,29 @@ def index_file(file_name, documentID):
         i = 0
         print(e)
 
+def index_txt_file(file_name):
+    stemmer = Porter2Stemmer()
+    k = kgram_index()
+    #punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+
+    # Dealing with punctuation
+    p = dict.fromkeys(string.punctuation)
+    p.pop('-') # we need to deal with hyphens
+    punctuation = str.maketrans(p)
+
+    try:
+        with open(file_name) as txt_file:
+
+            body = txt_file.lower().translate(punctuation).split(' ')
+            body = list(filter(lambda w: w != '', map(lambda s: s.strip(), body)))
+
+            term_positions = find_positions(body)
+
+            for key in term_positions:
+                index.add_term(stemmer.stem(key), documentID, term_positions[key])
+    except FileNotFoundError as e:
+        i = 0
+        print(e)
 
 # If the user selects a certain document, for displaying the original content
 def open_file_content(file_name):
@@ -135,6 +150,7 @@ def open_file_content(file_name):
 def wild(word_input):
     kg = kgram_index()
     w = wildcard()
+    stemmer = Porter2Stemmer()
 
     ktokens = []
     wildcard_tokens = w.wildcard_parser(word_input)
@@ -160,6 +176,12 @@ def wild(word_input):
     #print (ktokens)
     #print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
 
+    interected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
+
+    n = list(map(lambda t : stemmer.stem(t), interected_list))
+    n = list(map(lambda t : index.get_index()[t], n))
+    print ('Values: ' + str(n))
+
     return list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
 def document_parser(id):
@@ -167,29 +189,37 @@ def document_parser(id):
 
 def main():
     file_names = []  # Names of files
-    documentID = 0  # Document ID
-    n = near()
 
     # Instances
     w = wildcard()
+    n = near()
 
     # Find all .json files in this directory
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
-    directory = path.dirname(path.realpath(__file__))
-    # chdir(directory)
+    #directory = path.dirname(path.realpath(__file__))
+
+    # User input their own directory
+    directory = input('Enter directory for index: ')
+    chdir(directory)
     '''
     for file in listdir(directory):
         directory = path.dirname(os.path.realpath(__file__))
     print(directory)
     '''
     for file in listdir(directory):
-        if file.endswith('.json'):
+        if file.endswith('.txt'):
             file_names.append(str(file))
 
     # Index each file and mark its Document ID
+    #for file in file_names:
+        #index_file(file, re.findall(r'\d+', file)[0])
+
     for file in file_names:
-        index_file(file, re.findall(r'\d+', file)[0])
-    
+        index_txt_file(file)
+    for key in index.get_index():
+        index.print_term_info(key)
+
+    '''
     while 1:
 
         return_docs = []
@@ -219,7 +249,6 @@ def main():
             near_parts = user_string.split(' ')
             k = near_parts[1].split('/')
             return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
-            print ('DOC_LIST: ' + str(return_docs))
         else:
             q = Query(index.get_index())
             q_list = q.query_parser(user_string)
@@ -235,7 +264,7 @@ def main():
         doc_list = list(map(document_parser, return_docs))
         if len(doc_list) != 0:
             for document in doc_list:
-                print (document)
+                print ('Document ' + document)
             print ('Documents found: ' + str(len(doc_list)))
             document_selection = input('Please select a document you would like to view: ')
             while document_selection != 'no':
@@ -244,7 +273,7 @@ def main():
                 document_selection = input('Please select a document you would like to view: ')
         else:
             print ('No documents were found')
-
+    '''
     
 
     # Print every token in vocab and the words that contain that token
@@ -256,7 +285,7 @@ def main():
 
     # Print each term and postings with it
     #for key in index.get_index():
-    #   index.print_term_info(key)
+    #    index.print_term_info(key)
 
     # TEST: NEAR
     # stem word before doing it

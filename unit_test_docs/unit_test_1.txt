@@ -1,0 +1,15 @@
+Today I fell in a well. I had no mouth but I wanted to scream.
+
+today <ID: 1, [0]>, <ID: 2, [0]>
+i <ID: 1, [1, 6, 11]>
+fell <ID: 1, [2]>
+in <ID: 1, [3]>
+a <ID: 1, [4]>
+well <ID: 1, [5]>
+had <ID: 1, [7]>
+no <ID: 1, [8]>
+mouth <ID: 1, [9]>
+but <ID: 1, [10]>
+wanted <ID: 1, [12]>
+to <ID: 1, [13]>
+scream <ID: 1, [14]>

@@ -1,0 +1,54 @@
+today 			<ID: 1, [0]>, <ID: 2, [0]>, <ID: 3, [0]>
+i 				<ID: 1, [1, 6, 11]>, <ID: 2, [1]>, <ID: 3, [1]>, <ID: 4, [0]>
+fell 			<ID: 1, [2]>
+in 				<ID: 1, [3]>
+a 				<ID: 1, [4]>
+well 			<ID: 1, [5]>
+have 			<ID: 1, [7]>, <ID: 4, [1]>
+no 				<ID: 1, [8]>, <ID: 5, [8]>
+mouth 			<ID: 1, [9]>
+but 			<ID: 1, [10]>
+wanted 			<ID: 1, [12]>
+to 				<ID: 1, [13]>
+scream 			<ID: 1, [14]>
+top 			<ID: 2, [2]>
+decked 			<ID: 2, [3]>
+lethal 			<ID: 2, [4]>
+yogg 			<ID: 2, [5]>
+saron 			<ID: 2, [5]>
+yoggsaron 		<ID: 2, [5]>
+fucked 			<ID: 2, [6]>
+me 				<ID: 2, [7]>, <ID: 4, [8]>
+over 			<ID: 2, [8]>
+super 			<ID: 2, [9]>
+hard 			<ID: 2, [10]>
+learned 		<ID: 3, [2]>
+the 			<ID: 3, [3]>, <ID: 5, [2]>
+meaning 		<ID: 3, [4]>
+of 				<ID: 3, [5]>
+pain 			<ID: 3, [6]>
+it 				<ID: 3, [7]>, <ID: 4, [9]>, <ID: 5, [12]>
+was 			<ID: 3, [8]>, <ID: 4, [10]>
+all 			<ID: 3, [9]>
+caused 			<ID: 3, [10]>
+by 				<ID: 3, [11]>
+nealdt 			<ID: 3, [12]>
+ascended 		<ID: 4, [2]>
+into 			<ID: 4, [3]>
+enlightenment 	<ID: 4, [4]>
+my 				<ID: 4, [5]>
+waifu 			<ID: 4, [6]>
+told 			<ID: 4, [7]>
+actually 		<ID: 4, [11]>
+okay 			<ID: 4, [12]>
+jesus 			<ID: 5, [0]>
+take 			<ID: 5, [1]>
+wheel 			<ID: 5, [3]>
+or 				<ID: 5, [4]>
+else 			<ID: 5, [5]>
+asian 			<ID: 5, [6]>
+driver 			<ID: 5, [7]>
+survivors 		<ID: 5, [9]>
+dont 			<ID: 5, [10]>
+let 			<ID: 5, [11]>
+happen 			<ID: 5, [13]>

@@ -90,17 +90,20 @@ class Query:
             second_term = stemmer.stem(parsed_q[i+1])
 
             if first_term in self.postings and second_term in self.postings:
-                for post_1 in self.postings[first_term]:
-                    for post_2 in self.postings[second_term]:
-                        # if the doc ID's are the same, check that document
-                        if post_1.get_document_id() == post_2.get_document_id():
-                            for positions_1 in post_1.get_positions():
-                                for positions_2 in post_2.get_positions():
-                                    if abs(positions_2 - positions_1) <= i+1:
-                                        doc_list.add(int(post_1.get_document_id()))
-                                    else:
-                                        if post_1 in doc_list:
-                                            doc_list.remove(post_1.get_document_id())
+                temp_set = set(self.postings[first_term]).intersection(set(self.postings[second_term]))
+                print(self.postings[first_term], self.postings[second_term])
+                print('Temp set for phrases', temp_set)
+                # for post_1 in self.postings[first_term]:
+                #     for post_2 in self.postings[second_term]:
+                #         # if the doc ID's are the same, check that document
+                #         if post_1.get_document_id() == post_2.get_document_id():
+                #             for positions_1 in post_1.get_positions():
+                #                 for positions_2 in post_2.get_positions():
+                #                     if abs(positions_2 - positions_1) <= i+1:
+                #                         doc_list.add(int(post_1.get_document_id()))
+                #                     else:
+                #                         if post_1 in doc_list:
+                #                             doc_list.remove(post_1.get_document_id())
             else:
                 print('Phrase', strings, 'not found')
                 return []

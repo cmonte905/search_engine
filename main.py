@@ -9,6 +9,7 @@ from positional_inverted_index import positional_inverted_index
 from posting import posting
 from kgram_index import kgram_index
 from wildcard import wildcard
+from near import near
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -127,41 +128,6 @@ def open_file_content(file_name):
         print (article_data['url'] + '\n')
         print('_____________________________________________________________________________________________________________________________________________________')
 
-
-def near(first_term, second_term, k):
-    # query: first_term NEAR/k second_term
-    # index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
-    # list of documents that have first_term NEAR/k second_term
-    #post_list = [(post_1, post_2) for post_1 in index.get_index()[first_term] for post_2 in index.get_index()[second_term] if post_1.get_document_id() == post_2.get_document_id()]
-    #return [(pos_1, pos_2) for pos_1 in post_1.get_positions() for pos_2 in post_2.get_positions() if (pos_2 - pos_1 <= k) and not (distance <= 0)]
-    
-    #doc_list = []
-    doc_list = set()
-
-    # stemming words first, can remove this later
-    stemmer = Porter2Stemmer()
-    first_term = stemmer.stem(first_term)
-    second_term = stemmer.stem(second_term)
-
-    for post_1 in index.get_index()[first_term]:
-        for post_2 in index.get_index()[second_term]:
-            # if the doc ID's are the same, check that document
-            if (post_1.get_document_id() == post_2.get_document_id()):
-                ID = post_1.get_document_id()
-                for positions_1 in post_1.get_positions():
-                    for positions_2 in post_2.get_positions():
-                        distance = positions_2 - positions_1
-                        # if (abs(distance) <= k):
-
-                        # List way
-                        #if (distance <= k and not distance <= 0 and not ID in doc_list):
-                        #    doc_list.append(ID)
-
-                        # Using a set for no duplicate docs ID's
-                        if (distance <= k and not distance <= 0):
-                            doc_list.add(ID)
-    return doc_list
-    
 # Wild card input
 # word_input: the user input of a wild card. 
 # EX:   land*cape
@@ -202,6 +168,7 @@ def document_parser(id):
 def main():
     file_names = []  # Names of files
     documentID = 0  # Document ID
+    n = near()
 
     # Instances
     w = wildcard()
@@ -222,7 +189,6 @@ def main():
     # Index each file and mark its Document ID
     for file in file_names:
         index_file(file, re.findall(r'\d+', file)[0])
-
     
     while 1:
 
@@ -250,9 +216,10 @@ def main():
             return_docs.extend(wild(user_string))
         elif 'near' in user_string:
             # Parse NEAR input
+            #n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1]))
             near_parts = user_string.split(' ')
             k = near_parts[1].split('/')
-            return_docs.extend(near(near_parts[0], near_parts[2], int(k[1])))
+            return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
             #print (near(near_parts[0], near_parts[2], int(k[1])))
         else:
             q = Query(index.get_index())
@@ -272,8 +239,10 @@ def main():
             print (document)
         print ('Documents found: ' + str(len(doc_list)))
         document_selection = input('Please select a document you would like to view: ')
-        if document_selection in doc_list:
-            open_file_content(document_selection)
+        while document_selection != 'no':
+            if document_selection in doc_list:
+                open_file_content(document_selection)
+            document_selection = input('Please select a document you would like to view: ')
 
 
     # Print every token in vocab and the words that contain that token

@@ -10,7 +10,7 @@ class posting:
 
     # Return the document ID of a posting
     def get_document_id(self):
-        return str(self.document_id)
+        return int(self.document_id)
     
     # Return a list of positions in a posting
     def get_positions(self):

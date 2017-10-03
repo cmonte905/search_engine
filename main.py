@@ -121,11 +121,11 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-        print('________________________________________________________________________________________________')
+        print('_____________________________________________________________________________________________________________________________________________________')
         print(article_data['title'] + '\n')
-        # print (article_data['body'] + '\n')
-        # print (article_data['url'] + '\n')
-
+        print (article_data['body'] + '\n')
+        print (article_data['url'] + '\n')
+        print('_____________________________________________________________________________________________________________________________________________________')
 
 
 def near(first_term, second_term, k):
@@ -166,7 +166,6 @@ def near(first_term, second_term, k):
 # word_input: the user input of a wild card. 
 # EX:   land*cape
 #       he*lo
-# 
 def wild(word_input):
     kg = kgram_index()
     w = wildcard()
@@ -185,8 +184,6 @@ def wild(word_input):
     # remove '$' from tokens
     ktokens[:] = [x for x in ktokens if x != '$']
 
-    print (ktokens)
-
     canidate_lists = []
 
     for token in ktokens:
@@ -194,10 +191,13 @@ def wild(word_input):
             canidate_lists.append(vocab[token])
             print (token, list(vocab[token]))
 
-    print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
+    #print (ktokens)
+    #print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
 
-    return set(canidate_lists[0].intersection(*canidate_lists[1:]))
+    return list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
+def document_parser(id):
+    return str('json' + str(id) + '.json')
 
 def main():
     file_names = []  # Names of files
@@ -222,38 +222,14 @@ def main():
     # Index each file and mark its Document ID
     for file in file_names:
         index_file(file, re.findall(r'\d+', file)[0])
-    # Print every token in vocab and the words that contain that token
-    #for token in vocab:
-        #print (token, str(vocab[token]))
 
-
-    for word in index.get_dictionary():
-        w = ('$' + word + '$')
-        for token in vocab:
-            if token in w:
-                vocab[token].append(word)
-
-    # for token in vocab:
-    #     print (token, str(vocab[token]))
-
-
-    # Wildcard and Kgram tesing
-    wild('**acre')
-
-    '''
+    
     while 1:
-        first = raw_input('Enter first word: ')
-        second = raw_input('Enter second word: ')
 
-        near()
-    '''
-    # vocab()
-
-
-
-    while 1:
+        return_docs = []
 
         user_string = input("Please enter a word search:\n")
+        # Special Queries
         if ':' in user_string:
             if ':q' in user_string:
                 exit()
@@ -267,10 +243,17 @@ def main():
             if ':vocab' in user_string:
                 pp = pprint.PrettyPrinter(indent=4)
                 pp.pprint(index.get_dictionary())
-                print(index.get_term_count())
+                print('Total number of vocabulary terms: ' + str(index.get_term_count()))
                 print('Will be spitting out words')
         elif '*' in user_string:
             print("This will get sent of to the wildcard class")
+            return_docs.extend(wild(user_string))
+        elif 'near' in user_string:
+            # Parse NEAR input
+            near_parts = user_string.split(' ')
+            k = near_parts[1].split('/')
+            return_docs.extend(near(near_parts[0], near_parts[2], int(k[1])))
+            #print (near(near_parts[0], near_parts[2], int(k[1])))
         else:
             q = Query(index.get_index())
             q_list = q.query_parser(user_string)
@@ -278,35 +261,46 @@ def main():
                 print('Postings list : ', q_list, '\n', len(q_list))
             else:
                 print('There is no document matched your query')
+    
+
+        print ('DOC_LIST: ' + str(return_docs))
+
+        # 
+
+        doc_list = list(map(document_parser, return_docs))
+        for document in doc_list:
+            print (document)
+        print ('Documents found: ' + str(len(doc_list)))
+        document_selection = input('Please select a document you would like to view: ')
+        if document_selection in doc_list:
+            open_file_content(document_selection)
 
 
+    # Print every token in vocab and the words that contain that token
+    #for token in vocab:
+        #print (token, str(vocab[token]))
 
-
-
-            # Print all keys in index
-            # print (index.get_dictionary())
     # Print all keys in index
-    #print (index.get_dictionary())
+    # print (index.get_dictionary())
 
+    # Print each term and postings with it
+    #for key in index.get_index():
+    #   index.print_term_info(key)
 
+    # Print each term and postings with it
+    #for key in index.get_index():
+    #   index.print_term_info(key)
 
-            # Print each term and postings with it
-            # for key in index.get_index():
-            #   index.print_term_info(key)
-
-        # Print each term and postings with it
-        for key in index.get_index():
-            index.print_term_info(key)
-
-
-    # Testing NEAR
+    # TEST: NEAR
     # stem word before doing it
-    # print(near('sand', 'massacre', 10))
+    print (near('camping', 'yosemite', 10))
 
+    # TEST: Wildcard and KGram tesing
+    #wild('**acre')
 
-            # K Gram test
-            # for term in index.get_index():
-            # k_gram_test(term)
+    # TEST: Print original content of document
+    #for name in file_names:
+    #    open_file_content(name)
 
 
 if __name__ == "__main__":

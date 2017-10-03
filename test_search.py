@@ -171,4 +171,4 @@ def test_index_txt_file():
     correct_map['happen'] = [posting(5, [13])]
 
     for keys in txt_index.get_index():
-        assert keys in correct_map
+        assert keys in correct_ma

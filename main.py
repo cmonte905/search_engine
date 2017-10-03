@@ -34,7 +34,6 @@ pp = pprint.PrettyPrinter(indent=4)
 def find_positions(term_list):
     positions_dict = {}
     for i in range(0, len(term_list)):
-
         # Hyphened words
         # Because they all share the same position when split
         if '-' in term_list[i]:
@@ -109,31 +108,6 @@ def index_file(file_name, documentID):
         i = 0
         print(e)
 
-def index_txt_file(file_name, documentID):
-    stemmer = Porter2Stemmer()
-    k = kgram_index()
-    #punctuation = str.maketrans(dict.fromkeys(string.punctuation))
-
-    # Dealing with punctuation
-    p = dict.fromkeys(string.punctuation)
-    p.pop('-') # we need to deal with hyphens
-    punctuation = str.maketrans(p)
-
-    try:
-        with open(file_name) as txt_file:
-
-            content = txt_file.readlines();
-            content = content[0].lower().translate(punctuation).split(' ')
-
-            content = list(filter(lambda w: w != '', map(lambda s: s.strip(), content)))
-
-            term_positions = find_positions(content)
-
-            for key in term_positions:
-                index.add_term(stemmer.stem(key), documentID, term_positions[key])
-    except FileNotFoundError as e:
-        i = 0
-        print(e)
 
 # If the user selects a certain document, for displaying the original content
 def open_file_content(file_name):
@@ -182,7 +156,14 @@ def wild(word_input):
 
     n = list(map(lambda t : stemmer.stem(t), interected_list))
     n = list(map(lambda t : index.get_index()[t], n))
-    print ('Values: ' + str(n))
+
+    doc_list = []
+    for p_list in n:
+        for post in p_list:
+            doc_list.append(post.get_document_id())
+
+    # return list of docs for the word found
+    # return doc_list
 
     return list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
@@ -208,17 +189,17 @@ def main():
         directory = path.dirname(os.path.realpath(__file__))
     print(directory)
     '''
+    
     for file in listdir(directory):
-        if file.endswith('.txt'):
+        if file.endswith('.json'):
             file_names.append(str(file))
 
     # Index each file and mark its Document ID
     for file in file_names:
-        index_txt_file(file, re.findall(r'\d+', file)[0])
+        index_file(file, re.findall(r'\d+', file)[0])
 
-    #index_txt_file(file)
-    for key in index.get_index():
-        index.print_term_info(key)
+    #for key in index.get_index():
+    #    index.print_term_info(key)
 
 
     '''
@@ -295,7 +276,7 @@ def main():
     #print(n.near(index.get_index(), 'science', 'park', 3))
 
     # TEST: Wildcard and KGram tesing
-    #wild('**acre')
+    wild('**acre')
 
     # TEST: Print original content of document
     #for name in file_names:

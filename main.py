@@ -109,7 +109,7 @@ def index_file(file_name, documentID):
         i = 0
         print(e)
 
-def index_txt_file(file_name):
+def index_txt_file(file_name, documentID):
     stemmer = Porter2Stemmer()
     k = kgram_index()
     #punctuation = str.maketrans(dict.fromkeys(string.punctuation))
@@ -122,10 +122,12 @@ def index_txt_file(file_name):
     try:
         with open(file_name) as txt_file:
 
-            body = txt_file.lower().translate(punctuation).split(' ')
-            body = list(filter(lambda w: w != '', map(lambda s: s.strip(), body)))
+            content = txt_file.readlines();
+            content = content[0].lower().translate(punctuation).split(' ')
 
-            term_positions = find_positions(body)
+            content = list(filter(lambda w: w != '', map(lambda s: s.strip(), content)))
+
+            term_positions = find_positions(content)
 
             for key in term_positions:
                 index.add_term(stemmer.stem(key), documentID, term_positions[key])
@@ -211,13 +213,13 @@ def main():
             file_names.append(str(file))
 
     # Index each file and mark its Document ID
-    #for file in file_names:
-        #index_file(file, re.findall(r'\d+', file)[0])
-
     for file in file_names:
-        index_txt_file(file)
+        index_txt_file(file, re.findall(r'\d+', file)[0])
+
+    #index_txt_file(file)
     for key in index.get_index():
         index.print_term_info(key)
+
 
     '''
     while 1:
@@ -273,8 +275,8 @@ def main():
                 document_selection = input('Please select a document you would like to view: ')
         else:
             print ('No documents were found')
-    '''
     
+    '''
 
     # Print every token in vocab and the words that contain that token
     #for token in vocab:
@@ -290,7 +292,7 @@ def main():
     # TEST: NEAR
     # stem word before doing it
     # print (near('camping', 'yosemite', 10))
-    #print(n.near(index.get_index(), 'science', 'th', 2))
+    #print(n.near(index.get_index(), 'science', 'park', 3))
 
     # TEST: Wildcard and KGram tesing
     #wild('**acre')

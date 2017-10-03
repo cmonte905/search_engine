@@ -20,7 +20,7 @@ class near:
 	                for positions_1 in post_1.get_positions():
 	                    for positions_2 in post_2.get_positions():
 	                        print (str(post_1.get_document_id()) + ' ' + str(abs(positions_2 - positions_1)))
-	                        if (abs(positions_2 - positions_1) <= k):
+	                        if (positions_2 - positions_1 <= k):
 	                            doc_list.add(post_1.get_document_id())
 	    return doc_list
 

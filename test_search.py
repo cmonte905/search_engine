@@ -53,3 +53,29 @@ def test_orquery():
 	q = Query(h)
 	or_list = q.or_list(l1, l2)
 	assert {1, 3, 4, 6, 10, 15, 50} == or_list
+
+def index_txt_file(file_name, documentID):
+    stemmer = Porter2Stemmer()
+    k = kgram_index()
+    #punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+
+    # Dealing with punctuation
+    p = dict.fromkeys(string.punctuation)
+    p.pop('-') # we need to deal with hyphens
+    punctuation = str.maketrans(p)
+
+    try:
+        with open(file_name) as txt_file:
+
+            content = txt_file.readlines();
+            content = content[0].lower().translate(punctuation).split(' ')
+
+            content = list(filter(lambda w: w != '', map(lambda s: s.strip(), content)))
+
+            term_positions = find_positions(content)
+
+            for key in term_positions:
+                index.add_term(stemmer.stem(key), documentID, term_positions[key])
+    except FileNotFoundError as e:
+        i = 0
+        print(e)

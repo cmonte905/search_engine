@@ -47,9 +47,9 @@ class Query:
             for t in s.split(' '):
                 if t:  # if not empty
                     if '-' in t:
-                        temp_results_list.append(self.phrase_process(t))
+                        temp_results_list.append(self.phrase_process(t.lower()))
                     else:
-                        temp_results_list.append(self.query_process(t))
+                        temp_results_list.append(self.query_process(t.lower()))
             if len(temp_results_list) == 1:  # if only one thing got parsed, then just added it to or list
                 temp = list(set(temp_results_list[0]))
                 temp.sort()

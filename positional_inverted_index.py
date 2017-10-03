@@ -39,3 +39,6 @@ class positional_inverted_index:
     def print_term_info(self, term):
         for post in self.m_index[term]:
             print ('<' + term + ', [ID: ' + str(post.get_document_id()) + ' ' + str(post.get_positions()) + ']>') 
+
+    def clean(self):
+        self.m_index = {}

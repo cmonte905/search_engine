@@ -146,7 +146,7 @@ def wild(word_input):
     for token in ktokens:
         if token in vocab:
             canidate_lists.append(vocab[token])
-            print(token, list(vocab[token]))
+            #print(token, list(vocab[token]))
 
     #print (ktokens)
     #print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
@@ -170,19 +170,12 @@ def wild(word_input):
 def document_parser(id):
     return str('json' + str(id) + '.json')
 
-def main():
+def init(directory):
     file_names = []  # Names of files
-
-    # Instances
-    w = wildcard()
-    n = near()
-
-    # Find all .json files in this directory
-    # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
-    #directory = path.dirname(path.realpath(__file__))
-
+    index.clean()
+    vocab = {}
     # User input their own directory
-    directory = input('Enter directory for index: ')
+    #directory = input('Enter directory for index: ')
     chdir(directory)
     '''
     for file in listdir(directory):
@@ -199,11 +192,26 @@ def main():
         index_file(file, re.findall(r'\d+', file)[0])
 
 
+def main():
+    
+
+    # Instances
+    w = wildcard()
+    n = near()
+    directory = input('Enter directory for index: ')
+    init(directory)
+
+    # Find all .json files in this directory
+    # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
+    #directory = path.dirname(path.realpath(__file__))
+
+    
+
     #for key in index.get_index():
     #    index.print_term_info(key)
 
 
-    '''
+    
     while 1:
 
         return_docs = []
@@ -220,6 +228,7 @@ def main():
                 print(stemmer.stem(user_string.split(" ")[1]))
             if ':index' in user_string:
                 print('Will be indexing folder')
+                init(user_string.split(" ")[1].rstrip().lstrip())
             if ':vocab' in user_string:
                 pp = pprint.PrettyPrinter(indent=4)
                 pp.pprint(index.get_dictionary())
@@ -234,12 +243,14 @@ def main():
             k = near_parts[1].split('/')
             return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
         else:
-            q = Query(index.get_index())
-
-            results_list = q.query_parser(user_string)
-            for i in results_list:
-                print('json' + str(i) + '.json')
-            print('Num of results:\n', len(results_list))
+            if user_string:
+                q = Query(index.get_index())
+                return_docs = q.query_parser(user_string)
+                #for i in results_list:
+                    #print('json' + str(i) + '.json')
+                #print('Num of results:\n', len(results_list))
+            else:
+                print('No query entered')
 
         print ('DOC_LIST: ' + str(return_docs))
 
@@ -257,7 +268,7 @@ def main():
         else:
             print ('No documents were found')
     
-    '''
+    
 
     # Print every token in vocab and the words that contain that token
     #for token in vocab:
@@ -270,7 +281,7 @@ def main():
 
 
     # TEST: Wildcard and KGram tesing
-    wild('**acre')
+    #wild('**acre')
 
 
 

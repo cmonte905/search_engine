@@ -16,7 +16,6 @@ from porter2stemmer import Porter2Stemmer
 
 from query import Query
 
-
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
 index = positional_inverted_index()
@@ -61,11 +60,11 @@ def find_positions(term_list):
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
     k = kgram_index()
-    #punctuation = str.maketrans(dict.fromkeys(string.punctuation))
+    # punctuation = str.maketrans(dict.fromkeys(string.punctuation))
 
     # Dealing with punctuation
     p = dict.fromkeys(string.punctuation)
-    p.pop('-') # we need to deal with hyphens
+    p.pop('-')  # we need to deal with hyphens
     punctuation = str.maketrans(p)
 
     try:
@@ -78,7 +77,7 @@ def index_file(file_name, documentID):
             term_positions = find_positions(body)
 
             for key in term_positions:
-                
+
                 # KGram stuff
                 kgram_list = []
 
@@ -99,11 +98,11 @@ def index_file(file_name, documentID):
                         vocab[token] = set([key])
 
             for key in term_positions:
-                #stemmed_term = stemmer.stem(key)
-                #index.add_term(key, documentID, term_positions[key])
+                # stemmed_term = stemmer.stem(key)
+                # index.add_term(key, documentID, term_positions[key])
                 index.add_term(stemmer.stem(key), documentID, term_positions[key])
-                #if stemmed_term != key and not stemmed_term in index.m_index:
-                    #index.add_term(stemmed_term, documentID, term_positions[key])
+                # if stemmed_term != key and not stemmed_term in index.m_index:
+                # index.add_term(stemmed_term, documentID, term_positions[key])
     except FileNotFoundError as e:
         i = 0
         print(e)
@@ -113,11 +112,11 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-        print('_____________________________________________________________________________________________________________________________________________________')
+        print('_______________________________________________________________________________________________________')
         print(article_data['title'] + '\n')
         print (article_data['body'] + '\n')
         print (article_data['url'] + '\n')
-        print('_____________________________________________________________________________________________________________________________________________________')
+        print('_______________________________________________________________________________________________________')
 
 # Wild card input
 # word_input: the user input of a wild card. 
@@ -130,7 +129,7 @@ def wild(word_input):
 
     ktokens = []
     wildcard_tokens = w.wildcard_parser(word_input)
-    
+
     for token in wildcard_tokens:
         k = 0
         if len(token) > 3:
@@ -147,10 +146,11 @@ def wild(word_input):
     for token in ktokens:
         if token in vocab:
             canidate_lists.append(vocab[token])
-            print (token, list(vocab[token]))
+            print(token, list(vocab[token]))
 
     #print (ktokens)
     #print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
+
 
     interected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
@@ -198,6 +198,7 @@ def main():
     for file in file_names:
         index_file(file, re.findall(r'\d+', file)[0])
 
+
     #for key in index.get_index():
     #    index.print_term_info(key)
 
@@ -234,12 +235,11 @@ def main():
             return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
         else:
             q = Query(index.get_index())
-            q_list = q.query_parser(user_string)
-            if not len(q_list) == 0:
-                print('Postings list : ', q_list, '\n', len(q_list))
-            else:
-                print('There is no document matched your query')
-    
+
+            results_list = q.query_parser(user_string)
+            for i in results_list:
+                print('json' + str(i) + '.json')
+            print('Num of results:\n', len(results_list))
 
         print ('DOC_LIST: ' + str(return_docs))
 
@@ -263,24 +263,16 @@ def main():
     #for token in vocab:
     #    print (token, str(vocab[token]))
 
-    # Print all keys in index
-    #print (index.get_dictionary())
 
     # Print each term and postings with it
     #for key in index.get_index():
     #    index.print_term_info(key)
 
-    # TEST: NEAR
-    # stem word before doing it
-    # print (near('camping', 'yosemite', 10))
-    #print(n.near(index.get_index(), 'science', 'park', 3))
 
     # TEST: Wildcard and KGram tesing
     wild('**acre')
 
-    # TEST: Print original content of document
-    #for name in file_names:
-    #    open_file_content(name)
+
 
 
 if __name__ == "__main__":

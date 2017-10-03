@@ -90,25 +90,7 @@ class Query:
                 else:
                     temp_num2 += 1
 
-
-'''
-# still need to be added
-def near(first_term, second_term, k):
-    # query: first_term NEAR/k second_term
-    # index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...]
-
-    # list of documents that have first_term NEAR/k second_term
-    doc_list = []
-    for post1 in index.get_index()[first_term]:
-        for post2 in index.get_index()[second_term]:
-            # if the doc ID's are the same, check that document
-            if (post1.get_document_id() == post2.get_document_id()):
-                for positions1 in post1.get_positions():
-                    for positions2 in post2.get_positions():
-                        distance = positions2 - positions1
-                        # if (abs(distance) <= k):
-                        if (distance <= k and not distance <= 0): 
-                            # TODO: ask neal
-                            doc_list.append(post1.get_document_id())
-'''
-
+    def or_list(self, list1, list2):
+        temp = list1
+        temp.extend(list2)
+        return set(temp)

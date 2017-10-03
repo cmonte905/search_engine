@@ -216,11 +216,10 @@ def main():
             return_docs.extend(wild(user_string))
         elif 'near' in user_string:
             # Parse NEAR input
-            #n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1]))
             near_parts = user_string.split(' ')
             k = near_parts[1].split('/')
             return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
-            #print (near(near_parts[0], near_parts[2], int(k[1])))
+            print ('DOC_LIST: ' + str(return_docs))
         else:
             q = Query(index.get_index())
             q_list = q.query_parser(user_string)
@@ -232,29 +231,28 @@ def main():
 
         print ('DOC_LIST: ' + str(return_docs))
 
-        # 
-
+        # Allow the user to select a document to view
         doc_list = list(map(document_parser, return_docs))
-        for document in doc_list:
-            print (document)
-        print ('Documents found: ' + str(len(doc_list)))
-        document_selection = input('Please select a document you would like to view: ')
-        while document_selection != 'no':
-            if document_selection in doc_list:
-                open_file_content(document_selection)
+        if len(doc_list) != 0:
+            for document in doc_list:
+                print (document)
+            print ('Documents found: ' + str(len(doc_list)))
             document_selection = input('Please select a document you would like to view: ')
+            while document_selection != 'no':
+                if document_selection in doc_list:
+                    open_file_content(document_selection)
+                document_selection = input('Please select a document you would like to view: ')
+        else:
+            print ('No documents were found')
 
+    
 
     # Print every token in vocab and the words that contain that token
     #for token in vocab:
-        #print (token, str(vocab[token]))
+    #    print (token, str(vocab[token]))
 
     # Print all keys in index
-    # print (index.get_dictionary())
-
-    # Print each term and postings with it
-    #for key in index.get_index():
-    #   index.print_term_info(key)
+    #print (index.get_dictionary())
 
     # Print each term and postings with it
     #for key in index.get_index():
@@ -262,7 +260,8 @@ def main():
 
     # TEST: NEAR
     # stem word before doing it
-    print (near('camping', 'yosemite', 10))
+    # print (near('camping', 'yosemite', 10))
+    #print(n.near(index.get_index(), 'science', 'th', 2))
 
     # TEST: Wildcard and KGram tesing
     #wild('**acre')

@@ -54,7 +54,7 @@ def test_orquery():
 	or_list = q.or_list(l1, l2)
 	assert {1, 3, 4, 6, 10, 15, 50} == or_list
 
-def index_txt_file():
+def test_index_txt_file():
     txt_index = positional_inverted_index()
     stemmer = Porter2Stemmer()
     k = kgram_index()
@@ -125,7 +125,7 @@ def index_txt_file():
     correct_map['no'] = [posting(1, [8]), posting(5, [8])]
     correct_map['mouth'] = [posting(1, [9])]
     correct_map['but'] = [posting(1, [10])]
-    correct_map['wanted'] = [posting(1, [12])]
+    correct_map['want'] = [posting(1, [12])]
     correct_map['to'] = [posting(1, [13])]
     correct_map['scream'] = [posting(1, [14])]
     correct_map['top'] = [posting(2, [2])]
@@ -147,7 +147,7 @@ def index_txt_file():
     correct_map['it'] = [posting(3, [7]), posting(4, [9]), posting(5, [12])]
     correct_map['was'] = [posting(3, [8]), posting(4, [10])]
     correct_map['all'] = [posting(3, [9])]
-    correct_map['cause'] = [posting(3, [10])]
+    correct_map['caus'] = [posting(3, [10])]
     correct_map['by'] = [posting(3, [11])]
     correct_map['nealdt'] = [posting(3, [12])]
     correct_map['ascend'] = [posting(4, [2])]
@@ -169,3 +169,6 @@ def index_txt_file():
     correct_map['dont'] = [posting(5, [10])]
     correct_map['let'] = [posting(5, [11])]
     correct_map['happen'] = [posting(5, [13])]
+
+    for keys in txt_index.get_index():
+        assert keys in correct_map

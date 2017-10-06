@@ -13,6 +13,33 @@ class near:
 	    first_term = stemmer.stem(first_term)
 	    second_term = stemmer.stem(second_term)
 
+	    count = 0
+
+	    # Max number of iterations is the max size of the bigger list
+	    max_length = max(len(index.get_postings(first_term)), len(index.get_postings(second_term)))
+
+	    f_postings_list = index.get_postings(first_term)
+	    s_postings_list = index.get_postings(second_term)
+	    i = 0
+	    j = 0
+
+	    for n in range(0, max_length):
+	    	if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
+	    		f_positions_list = f_postings_list[i].get_positions()
+	    		s_positions_list = s_postings_list[j].get_positions()
+	    		max_poslist_size = max(f_positions_list, s_positions_list)
+
+	    		for pos in f_positions_list:
+	    			
+
+	    		for p in range(0, max_poslist_size):
+	    			if f_positions_list[]
+
+	    	# increment as needed
+	    	i += int((f_postings_list[i].get_document_id() < s_postings_list[j].get_document_id()))
+	    	j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+
+
 	    for post_1 in index[first_term]:
 	        for post_2 in index[second_term]:
 	            # if the doc ID's are the same, check that document

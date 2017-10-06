@@ -205,7 +205,7 @@ def main():
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     #directory = path.dirname(path.realpath(__file__))
 
-    
+    print (index.get_all_doc_ids('park'))
 
     #for key in index.get_index():
     #    index.print_term_info(key)
@@ -241,7 +241,7 @@ def main():
             # Parse NEAR input
             near_parts = user_string.split(' ')
             k = near_parts[1].split('/')
-            return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
+            return_docs.extend(n.near(index, near_parts[0], near_parts[2], int(k[1])))
         else:
             if user_string:
                 q = Query(index.get_index())

@@ -80,37 +80,62 @@ class Query:
         return temp_list
 
     def phrase_process(self, strings):  # Testing -> Prairie National, Site Indentification
-        doc_list = []
+
         parsed_q = strings.split('-')
 
         for i in range(len(parsed_q) - 1):
             doc_list = set()
-            # stemming words first, can remove this later
             first_term = stemmer.stem(parsed_q[i])
             second_term = stemmer.stem(parsed_q[i+1])
+            print(dir(self.postings))
+            max_length = max(len(self.postings.get_postings(first_term)), len(self.postings.get_postings(second_term)))
 
-            if first_term in self.postings and second_term in self.postings:
-                temp_set = set(self.postings[first_term]).intersection(set(self.postings[second_term]))
-                print(self.postings[first_term], self.postings[second_term])
-                print('Temp set for phrases', temp_set)
-                # for post_1 in self.postings[first_term]:
-                #     for post_2 in self.postings[second_term]:
-                #         # if the doc ID's are the same, check that document
-                #         if post_1.get_document_id() == post_2.get_document_id():
-                #             for positions_1 in post_1.get_positions():
-                #                 for positions_2 in post_2.get_positions():
-                #                     if abs(positions_2 - positions_1) <= i+1:
-                #                         doc_list.add(int(post_1.get_document_id()))
-                #                     else:
-                #                         if post_1 in doc_list:
-                #                             doc_list.remove(post_1.get_document_id())
-            else:
-                print('Phrase', strings, 'not found')
-                return []
-        # Python is funny with its sorting of lists, has to be done this way
-        return_list = list(doc_list)
-        return_list.sort()
-        return list(return_list)
+            f_postings_list = self.postings.get_postings(first_term)
+            s_postings_list = self.postings.get_postings(second_term)
+            i = 0
+            j = 0
+
+            f_doc_ids = list(map(lambda p: p.get_document_id(), self.postings.get_postings(first_term)))
+            s_doc_ids = list(map(lambda p: p.get_document_id(), self.postings.get_postings(second_term)))
+            # the maximum number of times to iterate is the max length of the list
+            for n in range(0, max_length):
+                if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
+                    f_pos_list = f_postings_list[i].get_positions()
+                    s_pos_list = s_postings_list[j].get_positions()
+
+                    # for any position that is less that the first list, get rid of it since its in order
+                    s_pos_list = list(filter(lambda p: p > f_pos_list[0], s_pos_list))
+
+                    # max_poslist_size = max(f_pos_list, s_pos_list)
+
+                    # second_pos - first_pos
+                    # we an return true for the first instance of true near
+                    for second_pos in s_pos_list:
+                        # find the distances between second word and first
+                        distances = list(map(lambda first_pos: second_pos - first_pos, f_pos_list))
+                        # change to true false if the distance was within k
+                        close_list = list(map(lambda p: p <= i + 1, distances))
+                        if True in close_list:
+                            doc_list.add(f_postings_list[i].get_document_id())
+                            break
+
+                # increment as needed
+                i += int((f_postings_list[i].get_document_id() < s_postings_list[j].get_document_id()))
+                j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+
+            for post_1 in self.postings[first_term]:
+                for post_2 in self.postings[second_term]:
+                    # if the doc ID's are the same, check that document
+                    if post_1.get_document_id() == post_2.get_document_id():
+                        for positions_1 in post_1.get_positions():
+                            for positions_2 in post_2.get_positions():
+                                # print (str(post_1.get_document_id()) + ' ' + str(abs(positions_2 - positions_1)))
+                                if abs(positions_2 - positions_1) <= i + 1:
+                                    doc_list.add(int(post_1.get_document_id()))
+                                else:
+                                    if post_1 in doc_list:
+                                        doc_list.remove(post_1.get_document_id())
+        return doc_list
 
     def and_list(self, list1, list2):
         list1.sort()  # Sorted here cause it doesnt want to sort earlier before
@@ -135,3 +160,4 @@ class Query:
         temp = list1
         temp.extend(list2)
         return set(temp)
+

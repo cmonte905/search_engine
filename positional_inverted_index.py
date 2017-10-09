@@ -44,6 +44,9 @@ class positional_inverted_index:
         self.m_index = {}
 
     def get_all_doc_ids(self, term):
+
+        #return list(map(lambda p : p.get_document_id(), self.m_index.get_postings()))
+
         id_list = set()
         for post in self.m_index[term]:
             id_list.add(post.get_document_id())

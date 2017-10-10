@@ -140,9 +140,9 @@ def wild(word_input):
             canidate_lists.append(vocab[token])
             print(token, list(vocab[token]), len(vocab))
 
-    interected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
+    intersected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
-    n = list(map(lambda t : stemmer.stem(t), interected_list))
+    n = list(map(lambda t : stemmer.stem(t), intersected_list))
     n = list(map(lambda t : index.get_index()[t], n))
 
     doc_list = []

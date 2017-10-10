@@ -93,7 +93,6 @@ def index_file(file_name, documentID):
                 for token in kgram_list:
                     if token in vocab:
                         vocab[token].add(key)
-
                     else:
                         vocab[token] = set([key])
 
@@ -193,11 +192,10 @@ def init(directory):
 
 
 def main():
-    
-
     # Instances
     w = wildcard()
     n = near()
+
     directory = input('Enter directory for index: ')
     init(directory)
 
@@ -205,7 +203,11 @@ def main():
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     #directory = path.dirname(path.realpath(__file__))
 
-    print (index.get_all_doc_ids('park'))
+    #print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
+
+    #print (index.get_all_doc_ids_index('park'))
+    print (n.near(index, 'explore', 'park', 6))
+
 
     #for key in index.get_index():
     #    index.print_term_info(key)

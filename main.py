@@ -224,7 +224,7 @@ def main():
             return_docs.extend(n.near(index, near_parts[0], near_parts[2], int(k[1])))
         else:
             if user_string:
-                q = Query(index.get_index())
+                q = Query(index)
                 return_docs = q.query_parser(user_string)
                 #for i in results_list:
                     #print('json' + str(i) + '.json')

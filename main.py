@@ -221,7 +221,7 @@ def main():
             # Parse NEAR input
             near_parts = user_string.split(' ')
             k = near_parts[1].split('/')
-            return_docs.extend(n.near(index.get_index(), near_parts[0], near_parts[2], int(k[1])))
+            return_docs.extend(n.near(index, near_parts[0], near_parts[2], int(k[1])))
         else:
             if user_string:
                 q = Query(index.get_index())

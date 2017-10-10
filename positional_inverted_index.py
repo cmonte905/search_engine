@@ -24,6 +24,7 @@ class positional_inverted_index:
         if (term in self.m_index):
             return self.m_index[term]
         return []
+        #return self.m_index[term] if (term in self.m_index) else []
 
     # Return a list of alphabetized keys of index
     def get_dictionary(self):
@@ -44,8 +45,23 @@ class positional_inverted_index:
         self.m_index = {}
 
     def get_all_doc_ids(self, term):
+        #return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
+
         id_list = set()
         for post in self.m_index[term]:
             id_list.add(post.get_document_id())
 
         return id_list
+
+    def get_all_doc_ids_index(self, term):
+        #return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
+        
+        id_list = set()
+        index_list = set()
+        for i in range(0, len(self.m_index[term])):
+
+            id_list.add(self.m_index[term][i].get_document_id())
+            index_list.add(i)
+
+        return list(zip(id_list, index_list))
+        

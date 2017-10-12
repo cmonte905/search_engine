@@ -23,16 +23,17 @@ class near:
         #both_set = index.get_all_doc_ids(first_term).intersection(index.get_all_doc_ids(second_term))
         # the maximum number of times to iterate is the max length of the list
         while 1:
-            if i + 1 > len(f_postings_list) or j + 1 > len(s_postings_list):
+            if i + 1 >= len(f_postings_list) or j + 1 >= len(s_postings_list):
                 return doc_list
 
             if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
                 f_pos_list = f_postings_list[i].get_positions()
                 s_pos_list = s_postings_list[j].get_positions()
 
+                w, z = 0
                 # for any position that is less that the first list, get rid of it
                 # the only positions that matter are second positions after the first pos
-                s_pos_list = list(filter(lambda p : p > f_pos_list[0], s_pos_list))
+                #s_pos_list = list(filter(lambda p : p > f_pos_list[0], s_pos_list))
 
                 # second_pos - first_pos
                 # we an return true for the first instance of true near
@@ -40,7 +41,8 @@ class near:
                 for second_pos in s_pos_list:
                     # find the distances between second word and first
                     distances = list(map(lambda first_pos : ((second_pos - first_pos <= k) and second_pos > first_pos), f_pos_list))
-                    if any(list(map(lambda p : p <= k, distances))):
+                    #if any(list(map(lambda p : p <= k, distances))):
+                    if any(distances):
                         doc_list.add(f_postings_list[i].get_document_id())
                         break
 

@@ -167,9 +167,11 @@ def init(directory):
         directory = path.dirname(os.path.realpath(__file__))
     print(directory)
     '''
+    sorted_files = sorted(listdir(directory), key=lambda x: int(re.sub('\D', '', x)))
     
-    for file in listdir(directory):
+    for file in sorted_files:
         if file.endswith('.json'):
+            print(file)
             file_names.append(str(file))
 
     # Index each file and mark its Document ID

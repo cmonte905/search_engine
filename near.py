@@ -34,6 +34,15 @@ class near:
                 # for any position that is less that the first list, get rid of it
                 # the only positions that matter are second positions after the first pos
                 #s_pos_list = list(filter(lambda p : p > f_pos_list[0], s_pos_list))
+                a, b = 0
+                while 1: 
+                	if a + 1 >= len(f_pos_list) or b + 1 >= len(s_pos_list):
+                		break
+
+                	if s_pos_list[b] - f_pos_list[a] <= k and (s_pos_list[b] > f_pos_list[a]):
+
+                	a += f_pos_list[a] > s_pos_list[b]
+                	b += f_pos_list[b] < s_pos_list[a]
 
                 # second_pos - first_pos
                 # we an return true for the first instance of true near
@@ -41,7 +50,6 @@ class near:
                 for second_pos in s_pos_list:
                     # find the distances between second word and first
                     distances = list(map(lambda first_pos : ((second_pos - first_pos <= k) and second_pos > first_pos), f_pos_list))
-                    #if any(list(map(lambda p : p <= k, distances))):
                     if any(distances):
                         doc_list.add(f_postings_list[i].get_document_id())
                         break
@@ -55,9 +63,5 @@ class near:
                 j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
 
         return doc_list
-
-    def near_positions(L1, L2):
-        return any([any(list(map(lambda p : pos_2 - p and pos_2 > p, L1))) for pos_2 in L2])
-
 
 # science near/2 park

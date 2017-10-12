@@ -108,6 +108,7 @@ class Query:
                 if i + 1 >= len(f_postings_list) or j + 1 >= len(s_postings_list):
                     # return_list = list(doc_list)
                     # return return_list
+                    current_list = self.phrase_current_list()
                     break
 
                 if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():

@@ -171,7 +171,6 @@ def init(directory):
     
     for file in sorted_files:
         if file.endswith('.json'):
-            print(file)
             file_names.append(str(file))
 
     # Index each file and mark its Document ID

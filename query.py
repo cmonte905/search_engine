@@ -86,9 +86,9 @@ class Query:
         doc_list = []
         stemmer = Porter2Stemmer()
 
-        for k in range(len(string_parsed) - 1):
+        for k in range(len(string_parsed) - 1):  # Goes on for how long the phrase is
             # stemming words first, can remove this later
-            current_list = []
+            current_list = []  # Empty in the beginning, used if phrase query is long, otherwise just one pass will do
 
             first_term = stemmer.stem(string_parsed[k])
             second_term = stemmer.stem(string_parsed[k+1])
@@ -166,14 +166,14 @@ class Query:
         temp.extend(list2)
         return set(temp)
 
-    def phrase_combine_list(self, post_list, current_doc_ids):
+    def phrase_current_list(self, post_list, current_doc_ids):
         """
         Gets 2(3?) lists, one of postings, one of doc ids, returns a list of postings back
         based on the doc ids that we got back
         :param post_list: list of postings from one of the words, shouldnt matter which list it is
         since we will be getting the same postings back anyways
-        :param current_doc_ids: Doc ids current found from phrase query
-        :return:
+        :param current_doc_ids: Doc ids current found from the previous phrase query
+        :return: Current list, postings to use for the next word
         """
         return_list = []
         for i in post_list:

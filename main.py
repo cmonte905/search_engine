@@ -15,6 +15,7 @@ from near import near
 from porter2stemmer import Porter2Stemmer
 
 from query import Query
+import time
 
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
@@ -77,10 +78,8 @@ def index_file(file_name, documentID):
             term_positions = find_positions(body)
 
             for key in term_positions:
-
                 # KGram stuff
                 kgram_list = []
-
                 # develop a list of kgram tokens for one specific term
                 for i in range(1, 4):
                     if i is 1:
@@ -88,7 +87,6 @@ def index_file(file_name, documentID):
                     else:
                         s = ('$' + key + '$')
                         kgram_list.extend(k.create_kgram(s, i))
-
                 # Shove each of those tokens into the grand vocab dictionary
                 for token in kgram_list:
                     if token in vocab:
@@ -96,12 +94,7 @@ def index_file(file_name, documentID):
                     else:
                         vocab[token] = set([key])
 
-            for key in term_positions:
-                # stemmed_term = stemmer.stem(key)
-                # index.add_term(key, documentID, term_positions[key])
                 index.add_term(stemmer.stem(key), documentID, term_positions[key])
-                # if stemmed_term != key and not stemmed_term in index.m_index:
-                # index.add_term(stemmed_term, documentID, term_positions[key])
     except FileNotFoundError as e:
         i = 0
         print(e)
@@ -145,26 +138,19 @@ def wild(word_input):
     for token in ktokens:
         if token in vocab:
             canidate_lists.append(vocab[token])
-            #print(token, list(vocab[token]))
+            print(token, list(vocab[token]), len(vocab))
 
-    #print (ktokens)
-    #print (set(canidate_lists[0]).intersection(*canidate_lists[1:]))
+    intersected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
-
-    interected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
-
-    n = list(map(lambda t : stemmer.stem(t), interected_list))
+    n = list(map(lambda t : stemmer.stem(t), intersected_list))
     n = list(map(lambda t : index.get_index()[t], n))
 
     doc_list = []
     for p_list in n:
         for post in p_list:
             doc_list.append(post.get_document_id())
-
     # return list of docs for the word found
-    # return doc_list
-
-    return list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
+    return doc_list
 
 def document_parser(id):
     return str('json' + str(id) + '.json')
@@ -181,8 +167,9 @@ def init(directory):
         directory = path.dirname(os.path.realpath(__file__))
     print(directory)
     '''
+    sorted_files = sorted(listdir(directory), key=lambda x: int(re.sub('\D', '', x)))
     
-    for file in listdir(directory):
+    for file in sorted_files:
         if file.endswith('.json'):
             file_names.append(str(file))
 
@@ -197,12 +184,15 @@ def main():
     n = near()
 
     directory = input('Enter directory for index: ')
+    start_time = time.time()
     init(directory)
+    print("--- %s seconds ---" % str((time.time() - start_time) / 60))
 
     # Find all .json files in this directory
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     #directory = path.dirname(path.realpath(__file__))
 
+<<<<<<< HEAD
     #print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
 
     #print (index.get_all_doc_ids_index('park'))
@@ -214,6 +204,8 @@ def main():
 
 
     
+=======
+>>>>>>> refs/remotes/origin/master
     while 1:
 
         return_docs = []
@@ -246,7 +238,7 @@ def main():
             return_docs.extend(n.near(index, near_parts[0], near_parts[2], int(k[1])))
         else:
             if user_string:
-                q = Query(index.get_index())
+                q = Query(index)
                 return_docs = q.query_parser(user_string)
                 #for i in results_list:
                     #print('json' + str(i) + '.json')

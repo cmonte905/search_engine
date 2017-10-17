@@ -9,7 +9,9 @@ stemmer = Porter2Stemmer()
 class Query:
 
     def __init__(self, postings):
-        self.postings = postings
+        self.index = postings
+        self.postings = postings.get_index()
+
         self.q_dict = {}
 
     def plus_parse(self, string):
@@ -80,37 +82,66 @@ class Query:
         return temp_list
 
     def phrase_process(self, strings):  # Testing -> Prairie National, Site Indentification
+        string_parsed = strings.split('-')
         doc_list = []
-        parsed_q = strings.split('-')
+        stemmer = Porter2Stemmer()
 
-        for i in range(len(parsed_q) - 1):
-            doc_list = set()
+        for k in range(len(string_parsed) - 1):  # Goes on for how long the phrase is
             # stemming words first, can remove this later
-            first_term = stemmer.stem(parsed_q[i])
-            second_term = stemmer.stem(parsed_q[i+1])
+            current_list = []  # Empty in the beginning, used if phrase query is long, otherwise just one pass will do
 
-            if first_term in self.postings and second_term in self.postings:
-                temp_set = set(self.postings[first_term]).intersection(set(self.postings[second_term]))
-                print(self.postings[first_term], self.postings[second_term])
-                print('Temp set for phrases', temp_set)
-                # for post_1 in self.postings[first_term]:
-                #     for post_2 in self.postings[second_term]:
-                #         # if the doc ID's are the same, check that document
-                #         if post_1.get_document_id() == post_2.get_document_id():
-                #             for positions_1 in post_1.get_positions():
-                #                 for positions_2 in post_2.get_positions():
-                #                     if abs(positions_2 - positions_1) <= i+1:
-                #                         doc_list.add(int(post_1.get_document_id()))
-                #                     else:
-                #                         if post_1 in doc_list:
-                #                             doc_list.remove(post_1.get_document_id())
-            else:
-                print('Phrase', strings, 'not found')
-                return []
-        # Python is funny with its sorting of lists, has to be done this way
+            first_term = stemmer.stem(string_parsed[k])
+            second_term = stemmer.stem(string_parsed[k+1])
+
+            # Max number of iterations is the max size of the bigger list
+            # max_length = max(len(index.get_postings(first_term)), len(index.get_postings(second_term)))
+            if len(current_list) == 0:  # If first time going through, then first word will be our postings
+                f_postings_list = self.index.get_postings(first_term)
+
+            s_postings_list = self.index.get_postings(second_term)
+            i = 0
+            j = 0
+
+            # both_set = index.get_all_doc_ids(first_term).intersection(index.get_all_doc_ids(second_term))
+            # the maximum number of times to iterate is the max length of the list
+            while 1:
+                if i + 1 >= len(f_postings_list) or j + 1 >= len(s_postings_list):
+                    # return_list = list(doc_list)
+                    # return return_list
+                    current_list = self.phrase_current_list()
+                    break
+
+                if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
+                    f_pos_list = f_postings_list[i].get_positions()
+                    s_pos_list = s_postings_list[j].get_positions()
+
+                    # for any position that is less that the first list, get rid of it
+                    # the only positions that matter are second positions after the first pos
+                    s_pos_list = list(filter(lambda p: p > f_pos_list[0], s_pos_list))
+
+                    # second_pos - first_pos
+                    # we an return true for the first instance of true near
+
+                    for second_pos in s_pos_list:
+                        # find the distances between second word and first
+                        distances = list(
+                            map(lambda first_pos: ((second_pos - first_pos <= i + 1) and second_pos > first_pos), f_pos_list))
+                        if any(list(map(lambda p: p <= i + 1, distances))):
+                            doc_list.append(f_postings_list[i].get_document_id())
+                            break
+                        else:
+                            doc_list.remove(f_postings_list[i].get_document_id())
+                    i += 1
+                    j += 1
+
+                else:
+                    # increment as needed
+                    i += int((f_postings_list[i].get_document_id() < s_postings_list[j].get_document_id()))
+                    j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+
         return_list = list(doc_list)
-        return_list.sort()
-        return list(return_list)
+        return return_list
+
 
     def and_list(self, list1, list2):
         list1.sort()  # Sorted here cause it doesnt want to sort earlier before
@@ -135,3 +166,20 @@ class Query:
         temp = list1
         temp.extend(list2)
         return set(temp)
+
+    def phrase_current_list(self, post_list, current_doc_ids):
+        """
+        Gets 2(3?) lists, one of postings, one of doc ids, returns a list of postings back
+        based on the doc ids that we got back
+        :param post_list: list of postings from one of the words, shouldnt matter which list it is
+        since we will be getting the same postings back anyways
+        :param current_doc_ids: Doc ids current found from the previous phrase query
+        :return: Current list, postings to use for the next word
+        """
+        return_list = []
+        for i in post_list:
+            if i.get_document_id() in current_doc_ids:
+                return_list.append(i)
+
+        return return_list
+

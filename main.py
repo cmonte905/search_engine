@@ -3,6 +3,7 @@ import json
 import string
 import pprint
 import re
+import unidecode
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
@@ -71,9 +72,8 @@ def index_file(file_name, documentID):
     try:
         with open(file_name) as json_file:
             article_data = json.load(json_file)
-
-            body = (article_data['body']).lower().translate(punctuation).split(' ')
-            body = list(filter(lambda w: w != '', map(lambda s: s.strip(), body)))
+            body = unidecode.unidecode(article_data['body']).lower().translate(punctuation).split(' ')
+            body = list(filter(lambda t: t != '' and t != '-', body)) # remove single spaces and single hyphens
 
             term_positions = find_positions(body)
 
@@ -94,7 +94,19 @@ def index_file(file_name, documentID):
                     else:
                         vocab[token] = set([key])
 
-                index.add_term(stemmer.stem(key), documentID, term_positions[key])
+            position = 0
+            for term in body:
+                # take care of hyphenated words
+                if '-' in term:
+                    unhyphenated_word = term.replace('-', '')
+                    index.add_term(stemmer.stem(unhyphenated_word), documentID, position)
+                    hyphened_tokens = term.split('-')
+                    for t in hyphened_tokens:
+                        index.add_term(stemmer.stem(t), documentID, position)
+                else:
+                    index.add_term(stemmer.stem(term), documentID, position)
+                position += 1
+
     except FileNotFoundError as e:
         i = 0
         print(e)
@@ -159,14 +171,9 @@ def init(directory):
     file_names = []  # Names of files
     index.clean()
     vocab = {}
-    # User input their own directory
-    #directory = input('Enter directory for index: ')
+
     chdir(directory)
-    '''
-    for file in listdir(directory):
-        directory = path.dirname(os.path.realpath(__file__))
-    print(directory)
-    '''
+
     sorted_files = sorted(listdir(directory), key=lambda x: int(re.sub('\D', '', x)))
     
     for file in sorted_files:
@@ -175,7 +182,7 @@ def init(directory):
 
     # Index each file and mark its Document ID
     for file in file_names:
-        index_file(file, re.findall(r'\d+', file)[0])
+        index_file(file, int(re.findall(r'\d+', file)[0]))
 
 
 def main():
@@ -192,20 +199,14 @@ def main():
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
     #directory = path.dirname(path.realpath(__file__))
 
-<<<<<<< HEAD
     #print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
 
     #print (index.get_all_doc_ids_index('park'))
-    print (n.near(index, 'explore', 'park', 6))
+    #print (n.near(index, 'explore', 'park', 6))
 
+    for key in index.get_index():
+        index.print_term_info(key)
 
-    #for key in index.get_index():
-    #    index.print_term_info(key)
-
-
-    
-=======
->>>>>>> refs/remotes/origin/master
     while 1:
 
         return_docs = []

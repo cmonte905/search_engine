@@ -4,57 +4,77 @@ from porter2stemmer import Porter2Stemmer
 
 class near:
     def near(self, index, first_term, second_term, k):
+        doc_list = []
 
-        doc_list = set()
-
-        # stemming words first, can remove this later
         stemmer = Porter2Stemmer()
-        first_term = stemmer.stem(first_term)
-        second_term = stemmer.stem(second_term)
+        stemmed_first_term = stemmer.stem(first_term).lower()
+        stemmed_second_term = stemmer.stem(second_term).lower()
 
-        # Max number of iterations is the max size of the bigger list
-        #max_length = max(len(index.get_postings(first_term)), len(index.get_postings(second_term)))
+        f_postings_list = index.get_postings(stemmed_first_term)
+        s_postings_list = index.get_postings(stemmed_second_term)
 
-        f_postings_list = index.get_postings(first_term)
-        s_postings_list = index.get_postings(second_term)
+        #print ('Input:  ' + str(stemmed_first_term) + ' ' + str(stemmed_second_term) + ' ' + str(k))
+
         i = 0
         j = 0
-
-        #both_set = index.get_all_doc_ids(first_term).intersection(index.get_all_doc_ids(second_term))
-        # the maximum number of times to iterate is the max length of the list
         while 1:
-            if i + 1 >= len(f_postings_list) or j + 1 >= len(s_postings_list):
+            if i >= len(f_postings_list) or j >= len(s_postings_list):
                 return doc_list
 
             if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
                 f_pos_list = f_postings_list[i].get_positions()
                 s_pos_list = s_postings_list[j].get_positions()
 
-                w, z = 0
-                # for any position that is less that the first list, get rid of it
-                # the only positions that matter are second positions after the first pos
-                #s_pos_list = list(filter(lambda p : p > f_pos_list[0], s_pos_list))
-                a, b = 0
+                a = 0
+                b = 0
                 while 1: 
-                	if a + 1 >= len(f_pos_list) or b + 1 >= len(s_pos_list):
-                		break
-
-                # second_pos - first_pos
-                # we an return true for the first instance of true near
-
-                for second_pos in s_pos_list:
-                    # find the distances between second word and first
-                    distances = list(map(lambda first_pos : ((second_pos - first_pos <= k) and second_pos > first_pos), f_pos_list))
-                    if any(distances):
-                        doc_list.add(f_postings_list[i].get_document_id())
+                    #print ('BROKEN')
+                    if a >= len(f_pos_list) or b >= len(s_pos_list):
                         break
 
+                    if (s_pos_list[b] > f_pos_list[a]) and (s_pos_list[b] - f_pos_list[a] <= k):
+                        print (str(s_pos_list[b])  + ' - ' + str(f_pos_list[a]) + ' = ' + str(s_pos_list[b] - f_pos_list[a]) + ' <= ' + str(k))
+                        doc_list.append(f_postings_list[i].get_document_id())
+                        break
+                        '''
+                        if a < len(f_pos_list):
+                            a += 1
+                        if b < len(s_pos_list): 
+                            b += 1
+                        '''
+                        #print ('a = ' + str(a) +  ' b = ' + str(b))
+                    else:
+                        a += int(f_pos_list[a] < s_pos_list[b])
+
+                        #print ('A is now ' + str(a) + ' ' + str(a == len(f_pos_list)))
+
+                        if a == len(f_pos_list):
+
+                            #print ('A) ' + stemmed_first_term + ' ' + str(a) + ' and ' + stemmed_second_term + ' ' + str(b))
+
+                            break
+                        b += int(f_pos_list[a] > s_pos_list[b])
+
+                        #print ('B is now ' + str(b) + ' ' + str(b == len(s_pos_list)))
+
+                        if b == len(s_pos_list):
+
+                            #print ('B) ' + stemmed_first_term + ' ' + str(a) + ' and ' + stemmed_second_term + ' ' + str(b))
+
+                            break
+                        '''
+                        if a + 1 < len(f_pos_list) - 1:
+                            a += int(f_pos_list[a] > s_pos_list[b])
+                        if b + 1 < len(s_pos_list) - 1:
+                            b += int(f_pos_list[a] < s_pos_list[b])
+                        '''
                 i += 1
                 j += 1
 
             else:
-                # increment as needed
                 i += int((f_postings_list[i].get_document_id() < s_postings_list[j].get_document_id()))
                 j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+
+        #doc_list = list(map(lambda d: 'json' + str(d) + '.json', list(doc_list)))
 
         return doc_list

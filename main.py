@@ -28,36 +28,6 @@ vocab = {}
 
 pp = pprint.PrettyPrinter(indent=4)
 
-
-# Maps out terms with positions in the document into a dictionary
-# returns a dictionary of term keys and list of positions as value
-# {term : [positions]}
-def find_positions(term_list):
-    positions_dict = {}
-    for i in range(0, len(term_list)):
-        # Hyphened words
-        # Because they all share the same position when split
-        if '-' in term_list[i]:
-
-            hyphened_word_parts = term_list[i].split('-')
-            hyphened_word = term_list[i].replace('-', '')
-            hyphened_word_parts.append(hyphened_word)
-
-            for word in hyphened_word_parts:
-                if word in positions_dict:
-                    positions_dict[word].append(i)
-                else:
-                    positions_dict[word] = [i]
-        else:
-
-            if term_list[i] in positions_dict:
-                positions_dict[term_list[i]].append(i)
-            else:
-                positions_dict[term_list[i]] = [i]
-
-    return positions_dict
-
-
 # Use this index_file for .json files
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
@@ -75,8 +45,9 @@ def index_file(file_name, documentID):
             body = unidecode.unidecode(article_data['body']).lower().translate(punctuation).split(' ')
             body = list(filter(lambda t: t != '' and t != '-', body)) # remove single spaces and single hyphens
 
-            term_positions = find_positions(body)
+            #term_positions = find_positions(body)
 
+            '''
             for key in term_positions:
                 # KGram stuff
                 kgram_list = []
@@ -93,6 +64,7 @@ def index_file(file_name, documentID):
                         vocab[token].add(key)
                     else:
                         vocab[token] = set([key])
+            '''
 
             position = 0
             for term in body:
@@ -206,7 +178,7 @@ def main():
 
     for key in index.get_index():
         index.print_term_info(key)
-
+        
     while 1:
 
         return_docs = []

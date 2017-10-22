@@ -174,8 +174,8 @@ def main():
     #print (index.get_all_doc_ids_index('park'))
     #print (n.near(index, 'explore', 'park', 6))
 
-    for key in index.get_index():
-        index.print_term_info(key)
+    #for key in index.get_index():
+    #    index.print_term_info(key)
         
     while 1:
 

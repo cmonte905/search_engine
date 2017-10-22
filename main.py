@@ -32,7 +32,6 @@ pp = pprint.PrettyPrinter(indent=4)
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
     k = kgram_index()
-    # punctuation = str.maketrans(dict.fromkeys(string.punctuation))
 
     # Dealing with punctuation
     p = dict.fromkeys(string.punctuation)
@@ -45,29 +44,28 @@ def index_file(file_name, documentID):
             body = unidecode.unidecode(article_data['body']).lower().translate(punctuation).split(' ')
             body = list(filter(lambda t: t != '' and t != '-', body)) # remove single spaces and single hyphens
 
-            #term_positions = find_positions(body)
+            #kgram stuff here
 
-            '''
-            for key in term_positions:
-                # KGram stuff
+            position = 0
+            for term in body:
+
+                #kgram stuff here
                 kgram_list = []
                 # develop a list of kgram tokens for one specific term
+                # kgram doesn't need to deal with hyphens because the tokens will be created anyways
                 for i in range(1, 4):
                     if i is 1:
-                        kgram_list.extend(k.create_kgram(key, i))
+                        kgram_list.extend(k.create_kgram(term, i))
                     else:
-                        s = ('$' + key + '$')
+                        s = ('$' + term + '$')
                         kgram_list.extend(k.create_kgram(s, i))
                 # Shove each of those tokens into the grand vocab dictionary
                 for token in kgram_list:
                     if token in vocab:
-                        vocab[token].add(key)
+                        vocab[token].add(term)
                     else:
-                        vocab[token] = set([key])
-            '''
+                        vocab[token] = set([term])
 
-            position = 0
-            for term in body:
                 # take care of hyphenated words
                 if '-' in term:
                     unhyphenated_word = term.replace('-', '')

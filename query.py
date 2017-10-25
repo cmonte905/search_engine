@@ -84,7 +84,6 @@ class Query:
     def phrase_process(self, strings):  # Testing -> Prairie National, Site Indentification
         string_parsed = strings.split('-')
         doc_list = []
-        stemmer = Porter2Stemmer()
 
         for k in range(len(string_parsed) - 1):  # Goes on for how long the phrase is
             # stemming words first, can remove this later
@@ -94,53 +93,81 @@ class Query:
             second_term = stemmer.stem(string_parsed[k+1])
 
             # Max number of iterations is the max size of the bigger list
-            # max_length = max(len(index.get_postings(first_term)), len(index.get_postings(second_term)))
-            if len(current_list) == 0:  # If first time going through, then first word will be our postings
-                f_postings_list = self.index.get_postings(first_term)
+            # max_length = max(len(index.get_postings(first_term)), len(index.get_postings(second_term)))\
+
+            # If first time going through, then first word will be our postings
+            if len(current_list) == 0:
+                current_list = self.index.get_postings(first_term)
+            else:
+                current_list = self.phrase_current_list(s_postings_list, doc_list)
 
             s_postings_list = self.index.get_postings(second_term)
             i = 0
             j = 0
-
             # both_set = index.get_all_doc_ids(first_term).intersection(index.get_all_doc_ids(second_term))
             # the maximum number of times to iterate is the max length of the list
             while 1:
-                if i + 1 >= len(f_postings_list) or j + 1 >= len(s_postings_list):
-                    # return_list = list(doc_list)
-                    # return return_list
-                    current_list = self.phrase_current_list()
+                if i + 1 >= len(current_list) or j + 1 >= len(s_postings_list):
                     break
-
-                if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
-                    f_pos_list = f_postings_list[i].get_positions()
+                if current_list[i].get_document_id() == s_postings_list[j].get_document_id():
+                    f_pos_list = current_list[i].get_positions()
                     s_pos_list = s_postings_list[j].get_positions()
+                    a = 0
+                    b = 0
+                    while 1:
+                        if a >= len(f_pos_list) or b >= len(s_pos_list):
+                            break
 
-                    # for any position that is less that the first list, get rid of it
-                    # the only positions that matter are second positions after the first pos
-                    s_pos_list = list(filter(lambda p: p > f_pos_list[0], s_pos_list))
-
-                    # second_pos - first_pos
-                    # we an return true for the first instance of true near
-
-                    for second_pos in s_pos_list:
-                        # find the distances between second word and first
-                        distances = list(
-                            map(lambda first_pos: ((second_pos - first_pos <= i + 1) and second_pos > first_pos), f_pos_list))
-                        if any(list(map(lambda p: p <= i + 1, distances))):
-                            doc_list.append(f_postings_list[i].get_document_id())
+                        if (s_pos_list[b] > f_pos_list[a]) and (s_pos_list[b] - f_pos_list[a] <= k):
+                            # print (str(s_pos_list[b])  + ' - ' + str(f_pos_list[a]) + ' = ' + str(s_pos_list[b] - f_pos_list[a]) + ' <= ' + str(k))
+                            doc_list.append(current_list[i].get_document_id())
                             break
                         else:
-                            doc_list.remove(f_postings_list[i].get_document_id())
-                    i += 1
-                    j += 1
+                            a += int(f_pos_list[a] < s_pos_list[b])
+                            if a == len(f_pos_list):
+                               break
+                            b += int(f_pos_list[a] > s_pos_list[b])
+                            if b == len(s_pos_list):
+                                break
+                        i += 1
+                        j += 1
 
                 else:
-                    # increment as needed
-                    i += int((f_postings_list[i].get_document_id() < s_postings_list[j].get_document_id()))
-                    j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+                    i += int((current_list[i].get_document_id() < s_postings_list[j].get_document_id()))
+                    j += int((current_list[i].get_document_id() > s_postings_list[j].get_document_id()))
 
-        return_list = list(doc_list)
-        return return_list
+                return doc_list
+
+        #         if current_list[i].get_document_id() == s_postings_list[j].get_document_id():
+        #             f_pos_list = current_list[i].get_positions()
+        #             s_pos_list = s_postings_list[j].get_positions()
+        #
+        #             # for any position that is less that the first list, get rid of it
+        #             # the only positions that matter are second positions after the first pos
+        #             s_pos_list = list(filter(lambda p: p > f_pos_list[0], s_pos_list))
+        #
+        #             # second_pos - first_pos
+        #             # we an return true for the first instance of true near
+        #
+        #             for second_pos in s_pos_list:
+        #                 # find the distances between second word and first
+        #                 distances = list(
+        #                     map(lambda first_pos: ((second_pos - first_pos <= i + 1) and second_pos > first_pos), f_pos_list))
+        #                 if any(list(map(lambda p: p <= i + 1, distances))):
+        #                     doc_list.append(current_list[i].get_document_id())
+        #                     break
+        #                 else:
+        #                     doc_list.remove(current_list[i].get_document_id())
+        #             i += 1
+        #             j += 1
+        #
+        #         else:
+        #             # increment as needed
+        #             i += int((current_list[i].get_document_id() < s_postings_list[j].get_document_id()))
+        #             j += int((current_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+        #
+        # return_list = list(doc_list)
+        # return return_list
 
 
     def and_list(self, list1, list2):
@@ -183,3 +210,37 @@ class Query:
 
         return return_list
 
+
+#         while 1:
+#             if i >= len(f_postings_list) or j >= len(s_postings_list):
+#                 return doc_list
+#
+        #     if f_postings_list[i].get_document_id() == s_postings_list[j].get_document_id():
+        #         f_pos_list = f_postings_list[i].get_positions()
+        #         s_pos_list = s_postings_list[j].get_positions()
+        #
+        #         a = 0
+        #         b = 0
+        #         while 1:
+        #             if a >= len(f_pos_list) or b >= len(s_pos_list):
+        #                 break
+        #
+        #             if (s_pos_list[b] > f_pos_list[a]) and (s_pos_list[b] - f_pos_list[a] <= k):
+        #                 #print (str(s_pos_list[b])  + ' - ' + str(f_pos_list[a]) + ' = ' + str(s_pos_list[b] - f_pos_list[a]) + ' <= ' + str(k))
+        #                 doc_list.append(f_postings_list[i].get_document_id())
+        #                 break
+        #             else:
+        #                 a += int(f_pos_list[a] < s_pos_list[b])
+        #                 if a == len(f_pos_list):
+        #                     break
+        #                 b += int(f_pos_list[a] > s_pos_list[b])
+        #                 if b == len(s_pos_list):
+        #                     break
+        #         i += 1
+        #         j += 1
+        #
+        #     else:
+        #         i += int((f_postings_list[i].get_document_id() < s_postings_list[j].get_document_id()))
+        #         j += int((f_postings_list[i].get_document_id() > s_postings_list[j].get_document_id()))
+        #
+        # return doc_list

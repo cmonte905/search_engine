@@ -106,9 +106,10 @@ def open_file_content(file_name):
         article_data = json.load(json_file)
         print('_______________________________________________________________________________________________________')
         print(article_data['title'] + '\n')
-        print (article_data['body'] + '\n')
-        print (article_data['url'] + '\n')
+        print(article_data['body'] + '\n')
+        print(article_data['url'] + '\n')
         print('_______________________________________________________________________________________________________')
+
 
 # Wild card input
 # word_input: the user input of a wild card. 
@@ -142,8 +143,8 @@ def wild(word_input):
 
     intersected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
-    n = list(map(lambda t : stemmer.stem(t), intersected_list))
-    n = list(map(lambda t : index.get_index()[t], n))
+    n = list(map(lambda t: stemmer.stem(t), intersected_list))
+    n = list(map(lambda t: index.get_index()[t], n))
 
     doc_list = []
     for p_list in n:
@@ -152,15 +153,17 @@ def wild(word_input):
     # return list of docs for the word found
     return doc_list
 
+
 def document_parser(id):
     return str('json' + str(id) + '.json')
+
 
 def init(directory):
     file_names = []  # Names of files
     index.clean()
     vocab = {}
     # User input their own directory
-    #directory = input('Enter directory for index: ')
+    # directory = input('Enter directory for index: ')
     chdir(directory)
     '''
     for file in listdir(directory):
@@ -168,7 +171,7 @@ def init(directory):
     print(directory)
     '''
     sorted_files = sorted(listdir(directory), key=lambda x: int(re.sub('\D', '', x)))
-    
+
     for file in sorted_files:
         if file.endswith('.json'):
             file_names.append(str(file))
@@ -179,11 +182,10 @@ def init(directory):
 
 
 def main():
-    
-
     # Instances
     w = wildcard()
     n = near()
+
     directory = input('Enter directory for index: ')
     start_time = time.time()
     init(directory)
@@ -191,7 +193,15 @@ def main():
 
     # Find all .json files in this directory
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
-    #directory = path.dirname(path.realpath(__file__))
+    # directory = path.dirname(path.realpath(__file__))
+
+    # print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
+
+    # print (index.get_all_doc_ids_index('park'))
+    print(n.near(index, 'explore', 'park', 6))
+
+    # for key in index.get_index():
+    #    index.print_term_info(key)
 
     while 1:
 
@@ -227,44 +237,38 @@ def main():
             if user_string:
                 q = Query(index)
                 return_docs = q.query_parser(user_string)
-                #for i in results_list:
-                    #print('json' + str(i) + '.json')
-                #print('Num of results:\n', len(results_list))
+                # for i in results_list:
+                # print('json' + str(i) + '.json')
+                # print('Num of results:\n', len(results_list))
             else:
                 print('No query entered')
 
-        print ('DOC_LIST: ' + str(return_docs))
+        print('DOC_LIST: ' + str(return_docs))
 
         # Allow the user to select a document to view
         doc_list = list(map(document_parser, return_docs))
         if len(doc_list) != 0:
             for document in doc_list:
-                print ('Document ' + document)
-            print ('Documents found: ' + str(len(doc_list)))
+                print('Document ' + document)
+            print('Documents found: ' + str(len(doc_list)))
             document_selection = input('Please select a document you would like to view: ')
             while document_selection != 'no':
                 if document_selection in doc_list:
                     open_file_content(document_selection)
                 document_selection = input('Please select a document you would like to view: ')
         else:
-            print ('No documents were found')
-    
-    
+            print('No documents were found')
 
-    # Print every token in vocab and the words that contain that token
-    #for token in vocab:
-    #    print (token, str(vocab[token]))
+            # Print every token in vocab and the words that contain that token
+            # for token in vocab:
+            #    print (token, str(vocab[token]))
 
+            # Print each term and postings with it
+            # for key in index.get_index():
+            #    index.print_term_info(key)
 
-    # Print each term and postings with it
-    #for key in index.get_index():
-    #    index.print_term_info(key)
-
-
-    # TEST: Wildcard and KGram tesing
-    #wild('**acre')
-
-
+            # TEST: Wildcard and KGram tesing
+            # wild('**acre')
 
 
 if __name__ == "__main__":

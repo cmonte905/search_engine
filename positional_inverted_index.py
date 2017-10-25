@@ -63,5 +63,9 @@ class positional_inverted_index:
             id_list.add(self.m_index[term][i].get_document_id())
             index_list.add(i)
 
+<<<<<<< HEAD
         return list(zip(id_list, index_list))
         
+=======
+        return list(zip(id_list, index_list))
+>>>>>>> Stan

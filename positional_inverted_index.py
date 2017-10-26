@@ -1,5 +1,6 @@
 from posting import posting
 
+
 # Class for storing all functionality of a working index
 class positional_inverted_index:
 
@@ -24,7 +25,7 @@ class positional_inverted_index:
         if (term in self.m_index):
             return self.m_index[term]
         return []
-        #return self.m_index[term] if (term in self.m_index) else []
+        # return self.m_index[term] if (term in self.m_index) else []
 
     # Return a list of alphabetized keys of index
     def get_dictionary(self):
@@ -45,7 +46,7 @@ class positional_inverted_index:
         self.m_index = {}
 
     def get_all_doc_ids(self, term):
-        #return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
+        # return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
 
         id_list = set()
         for post in self.m_index[term]:
@@ -54,7 +55,7 @@ class positional_inverted_index:
         return id_list
 
     def get_all_doc_ids_index(self, term):
-        #return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
+        # return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
         
         id_list = set()
         index_list = set()
@@ -63,9 +64,5 @@ class positional_inverted_index:
             id_list.add(self.m_index[term][i].get_document_id())
             index_list.add(i)
 
-<<<<<<< HEAD
         return list(zip(id_list, index_list))
-        
-=======
-        return list(zip(id_list, index_list))
->>>>>>> Stan
+

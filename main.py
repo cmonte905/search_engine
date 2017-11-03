@@ -11,6 +11,7 @@ from posting import posting
 from kgram_index import kgram_index
 from wildcard import wildcard
 from near import near
+from pos_db import position_db
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -86,11 +87,9 @@ def index_file(file_name, documentID):
 def open_file_content(file_name):
     with open(file_name, 'r') as json_file:
         article_data = json.load(json_file)
-        print('_______________________________________________________________________________________________________')
         print(article_data['title'] + '\n')
         print (article_data['body'] + '\n')
         print (article_data['url'] + '\n')
-        print('_______________________________________________________________________________________________________')
 
 # Wild card input
 # word_input: the user input of a wild card. 
@@ -163,6 +162,7 @@ def main():
     directory = input('Enter directory for index: ')
     start_time = time.time()
     init(directory)
+    chdir('C:\\Users\\Stanl_000\\Documents\\GitHub\\search_engine\\DB')
     print("--- %s seconds ---" % str((time.time() - start_time) / 60))
 
     # Find all .json files in this directory
@@ -176,7 +176,15 @@ def main():
 
     #for key in index.get_index():
     #    index.print_term_info(key)
-        
+
+    position_term_db = position_db()
+    position_term_db.create_table()
+    for key in index.get_index():
+        position_term_db.add_term(key, 7)
+
+    position_term_db.print_db()
+    position_term_db.close_connection()    
+
     while 1:
 
         return_docs = []
@@ -232,23 +240,6 @@ def main():
                 document_selection = input('Please select a document you would like to view: ')
         else:
             print ('No documents were found')
-    
-    
-
-    # Print every token in vocab and the words that contain that token
-    #for token in vocab:
-    #    print (token, str(vocab[token]))
-
-
-    # Print each term and postings with it
-    #for key in index.get_index():
-    #    index.print_term_info(key)
-
-
-    # TEST: Wildcard and KGram tesing
-    #wild('**acre')
-
-
 
 
 if __name__ == "__main__":

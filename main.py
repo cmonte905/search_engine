@@ -198,7 +198,7 @@ def main():
     # print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
 
     # print (index.get_all_doc_ids_index('park'))
-    print(n.near(index, 'explore', 'park', 6))
+    # print(n.near(index, 'explore', 'park', 6))
 
     # for key in index.get_index():
     #    index.print_term_info(key)

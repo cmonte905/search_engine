@@ -1,4 +1,4 @@
-from re import sub, findall, split
+from re import sub, findall
 from porter2stemmer import Porter2Stemmer
 import pprint
 
@@ -100,10 +100,12 @@ class Query:
                 current_list = self.index.get_postings(first_term)
             else:
                 current_list = self.phrase_current_list(s_postings_list, doc_list)
-
+            # Gets the list of postings for the second word *
             s_postings_list = self.index.get_postings(second_term)
+
             i = 0
             j = 0
+            count = 1
             # both_set = index.get_all_doc_ids(first_term).intersection(index.get_all_doc_ids(second_term))
             # the maximum number of times to iterate is the max length of the list
             while 1:
@@ -116,13 +118,20 @@ class Query:
                     b = 0
                     while 1:
                         if a >= len(f_pos_list) or b >= len(s_pos_list):
+                            # Wanted to update the current list here but it is not the best place to do that
+                            print('Supposed to get out', k)
                             break
 
-                        if (s_pos_list[b] > f_pos_list[a]) and (s_pos_list[b] - f_pos_list[a] <= k):
-                            # print (str(s_pos_list[b])  + ' - ' + str(f_pos_list[a]) + ' = ' + str(s_pos_list[b] - f_pos_list[a]) + ' <= ' + str(k))
+                        if (s_pos_list[b] > f_pos_list[a]) and (s_pos_list[b] - f_pos_list[a] <= count):
                             doc_list.append(current_list[i].get_document_id())
+                            print('If they are a match', k)
                             break
+
                         else:
+                            print('If they do not match', k)
+                            # If its false, then remove it from the list, make sure it is in the list first though
+                            if current_list[i].get_document_id() in doc_list:
+                                doc_list.remove(current_list[i].get_document_id())
                             a += int(f_pos_list[a] < s_pos_list[b])
                             if a == len(f_pos_list):
                                break
@@ -135,8 +144,8 @@ class Query:
                 else:
                     i += int((current_list[i].get_document_id() < s_postings_list[j].get_document_id()))
                     j += int((current_list[i].get_document_id() > s_postings_list[j].get_document_id()))
-
-                return doc_list
+            count += 1
+        return doc_list
 
         #         if current_list[i].get_document_id() == s_postings_list[j].get_document_id():
         #             f_pos_list = current_list[i].get_positions()

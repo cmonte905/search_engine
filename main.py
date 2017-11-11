@@ -205,8 +205,10 @@ def main():
 
     # Reads from bin files and DB
     i_reader = disk_inverted_index()
+    print('Term that we get back: warn')
     print(i_reader.read_with_pos('warn'))
     print(i_reader.read_without_pos('warn'))
+
     print(i_reader.read_ld(1))
     print(i_reader.read_ld(2))
     print(i_reader.read_ld(3))

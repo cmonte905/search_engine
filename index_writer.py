@@ -4,7 +4,7 @@ from pos_db import position_db
 
 class index_writer():
 
-    def write_to_disk(self, index):
+    def write_index_to_disk(self, index):
         """
         Writes to disk whatever index dictionary that is given, slow as hell though
         :param index: Index gets passed a dictionary
@@ -67,3 +67,9 @@ class index_writer():
         position_term_db.print_db()
         position_term_db.close_connection_commit()
         index_binary_file.close()
+
+    def write_ld(self, Ld):
+
+        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'ab')
+        ld_doc.write(pack('d', Ld))
+        ld_doc.close()

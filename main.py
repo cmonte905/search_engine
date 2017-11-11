@@ -88,12 +88,14 @@ def index_file(file_name, documentID):
     except FileNotFoundError as e:
         print(e)
     wdt = 0
+    i_writer = index_writer()
     # Gets the Wdt's of the terms in the file
     for tf in weight_map:
         wdt += pow(1 + log(weight_map[tf]), 2)
     print('Wdt: ', wdt)
     Ld = sqrt(wdt)
     print('Ld of ', file_name, ':', Ld)
+    i_writer.write_ld(Ld)
 
 
 # If the user selects a certain document, for displaying the original content
@@ -199,12 +201,17 @@ def main():
     # Writes to the DB and file
 
     # i_writer = index_writer()
-    # i_writer.write_to_disk(index.get_index())
+    # i_writer.write_index_to_disk(index.get_index())
 
     # Reads from bin files and DB
     i_reader = disk_inverted_index()
     print(i_reader.read_with_pos('warn'))
     print(i_reader.read_without_pos('warn'))
+    print(i_reader.read_ld(1))
+    print(i_reader.read_ld(2))
+    print(i_reader.read_ld(3))
+    print(i_reader.read_ld(4))
+    print(i_reader.read_ld(5))
     # ------------------------------------------------------------------------------------------------------------
 
     # while 1:

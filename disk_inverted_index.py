@@ -1,5 +1,6 @@
 from porter2stemmer import Porter2Stemmer
 from pos_db import position_db
+from struct import unpack
 
 stemmer = Porter2Stemmer()
 
@@ -54,7 +55,7 @@ class disk_inverted_index:
         t = stemmer.stem(term)
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
 
-        read_index_bin = open('index.bin', 'rb')
+        read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index.bin', 'rb')
         read_index_bin.seek(file_loc)
         raw_df = read_index_bin.read(4)
 
@@ -77,3 +78,10 @@ class disk_inverted_index:
         read_index_bin.close()
         position_term_db.close_connection()
         return vocab_list_without_pos
+
+    def read_ld(self, doc_id):
+        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'rb')
+        weight_bin_file.seek(doc_id * 8 - 8)
+        ld = weight_bin_file.read(8)
+        readable_ld = unpack('d', ld)
+        return readable_ld[0]

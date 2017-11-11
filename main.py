@@ -25,6 +25,7 @@ import time
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
 index = positional_inverted_index()
+corpus_size = 0
 
 # List of vocab tokens for terms in the corpus
 # Dictionary <String : Set<String>>
@@ -159,6 +160,7 @@ def init(directory):
     chdir(directory)
 
     sorted_files = sorted(listdir(directory), key=lambda x: (int(re.sub('\D', '', x)), x))
+    corpus_size = len(sorted_files)
     
     for file in sorted_files:
         if file.endswith('.json'):
@@ -177,22 +179,22 @@ def main():
     # directory = input('Enter directory for index: ')  # TODO Revert back to original when done
 
     # TODO This is for testing purposes, so i can compare output
-    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
-    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
+    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
+    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
     cwd = getcwd()
     start_time = time.time()
-    init(test_dir)
+    # init(test_dir)
     chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
     print("--- %s seconds ---" % str((time.time() - start_time) / 60))
 
     # Find all .json files in this directory
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
-    #directory = path.dirname(path.realpath(__file__))
+    #d irectory = path.dirname(path.realpath(__file__))
 
-    #print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
+    # print (index.get_all_doc_ids('park').intersection(index.get_all_doc_ids('sand')))
 
-    #print (index.get_all_doc_ids_index('park'))
-    #print (n.near(index, 'explore', 'park', 6))
+    # print (index.get_all_doc_ids_index('park'))
+    # print (n.near(index, 'explore', 'park', 6))
 
     #for key in index.get_index():
     #    index.print_term_info(key)
@@ -205,16 +207,33 @@ def main():
 
     # Reads from bin files and DB
     i_reader = disk_inverted_index()
-    print('Term that we get back: warn')
-    print(i_reader.read_with_pos('warn'))
-    print(i_reader.read_without_pos('warn'))
-    for i in i_reader.get_pos_postings_from_disk('warn'):
+
+    # print('Term that we get back: warn')
+    # print(i_reader.read_with_pos('warn'))
+    # print(i_reader.read_without_pos('warn'))
+    # for i in i_reader.get_pos_postings_from_disk('warn'):
+    #     print(i)
+    #     print('Ld:', i_reader.read_ld(i.get_document_id()))
+    #
+    # print('Term that we get back: zip')
+    # print(i_reader.read_with_pos('zip'))
+    # print(i_reader.read_without_pos('zip'))
+    # for i in i_reader.get_pos_postings_from_disk('zip'):
+    #     print(i)
+    #     print('Ld:', i_reader.read_ld(i.get_document_id()))
+
+    print('Term that we get back: baseball')
+    print(i_reader.read_with_pos('baseball'))
+    print(i_reader.read_without_pos('baseball'))
+    for i in i_reader.get_pos_postings_from_disk('baseball'):
         print(i)
-    print(i_reader.read_ld(1))
-    print(i_reader.read_ld(2))
-    print(i_reader.read_ld(3))
-    print(i_reader.read_ld(4))
-    print(i_reader.read_ld(5))
+        print('Ld:', i_reader.read_ld(i.get_document_id()))
+
+    # print(i_reader.read_ld(1))
+    # print(i_reader.read_ld(2))
+    # print(i_reader.read_ld(3))
+    # print(i_reader.read_ld(4))
+    # print(i_reader.read_ld(5))
 
     # ------------------------------------------------------------------------------------------------------------
 

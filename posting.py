@@ -1,11 +1,11 @@
 # Class to encapsulate a single posting
 class posting:
-    def __init__(self, _id, pos_list):
+    def __init__(self, _id, pos_list=None):
         self.document_id = _id
         self.positions_list = pos_list
 
     def __str__(self):
-        return 'doc_id: {0} : num of positions {1}'.format(self.document_id, len(self.positions_list))
+        return 'doc_id: {0} : num of positions {1} posiions {2}'.format(self.document_id, len(self.positions_list), self.positions_list)
 
     # print("a={0},b={1}".format(a, b))
 

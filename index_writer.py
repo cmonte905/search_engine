@@ -10,7 +10,7 @@ class index_writer():
         :param index: Index gets passed a dictionary
         :return:
         """
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
         position_term_db.create_table()
         current_index = index
         sorted_key_list = sorted(index)

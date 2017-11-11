@@ -14,7 +14,7 @@ class disk_inverted_index:
     """
 
     def read_with_pos(self, term):
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
         # print('Position that is getting stored in DB for your:', position_term_db.get_term('your')[0])
         # print('Position that is getting stored in DB for you:', position_term_db.get_term('you')[0])
 
@@ -50,7 +50,7 @@ class disk_inverted_index:
         return vocab_list_pos
 
     def read_without_pos(self, term):
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
         t = stemmer.stem(term)
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
 
@@ -93,20 +93,19 @@ class disk_inverted_index:
         """
         postings_list = []
         p_list = self.read_with_pos(term)
-        print('\n\nPostings list before postings:', p_list)
-        df = p_list[0]
-        del p_list[0]
+        # print('\n\nPostings list before postings:', p_list)
+        counter = 0
+        df = p_list[counter]
+        counter += 1
         for i in range(df):
-            doc_id = p_list[0]
-            del p_list[0]
-            print('Doc id:', doc_id)
-            tf = p_list[0]
-            print('Tf i guess', tf)
-            del p_list[0]
-            pos_list = p_list[0:tf]
-            del p_list[0:tf]
-            print('Position list without loops?', pos_list)
-
+            doc_id = p_list[counter]
+            counter += 1
+            # print('Doc id:', doc_id)
+            tf = p_list[counter]
+            # print('Tf i guess', tf)
+            counter += 1
+            pos_list = p_list[counter:tf+counter]
+            counter += tf
             postings_list.append(posting(doc_id, pos_list))
         print(postings_list)
         return postings_list
@@ -114,3 +113,18 @@ class disk_inverted_index:
 
     def get_postings_from_disk(self, term):
         print('These dont have any positions?')
+        postings_list = []
+        p_list = self.read_without_pos(term)
+        counter = 0
+        df = p_list[counter]
+        counter += 1
+        for i in range(df):
+            doc_id = p_list[counter]
+            counter += 1
+            tf = p_list[counter]
+            counter += 1
+            pos_list = p_list[counter:tf + counter]
+            counter += tf
+            postings_list.append(posting(doc_id, pos_list))
+        print(postings_list)
+        return postings_list

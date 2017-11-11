@@ -208,12 +208,14 @@ def main():
     print('Term that we get back: warn')
     print(i_reader.read_with_pos('warn'))
     print(i_reader.read_without_pos('warn'))
-
+    for i in i_reader.get_pos_postings_from_disk('warn'):
+        print(i)
     print(i_reader.read_ld(1))
     print(i_reader.read_ld(2))
     print(i_reader.read_ld(3))
     print(i_reader.read_ld(4))
     print(i_reader.read_ld(5))
+
     # ------------------------------------------------------------------------------------------------------------
 
     # while 1:

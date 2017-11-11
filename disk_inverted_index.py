@@ -1,6 +1,7 @@
 from porter2stemmer import Porter2Stemmer
 from pos_db import position_db
 from struct import unpack
+from posting import posting
 
 stemmer = Porter2Stemmer()
 
@@ -82,3 +83,34 @@ class disk_inverted_index:
         ld = weight_bin_file.read(8)
         readable_ld = unpack('d', ld)
         return readable_ld[0]
+
+    def get_pos_postings_from_disk(self, term):
+        """
+        Assume that the term will get stemmed from main, not here
+        :param term:
+        :return: Array of postings? Maybe a one thing dict with the term and postings for the values, or just return
+        the list and have a dict outside of this that will take care of that
+        """
+        postings_list = []
+        p_list = self.read_with_pos(term)
+        print('\n\nPostings list before postings:', p_list)
+        df = p_list[0]
+        del p_list[0]
+        for i in range(df):
+            doc_id = p_list[0]
+            del p_list[0]
+            print('Doc id:', doc_id)
+            tf = p_list[0]
+            print('Tf i guess', tf)
+            del p_list[0]
+            pos_list = p_list[0:tf]
+            del p_list[0:tf]
+            print('Position list without loops?', pos_list)
+
+            postings_list.append(posting(doc_id, pos_list))
+        print(postings_list)
+        return postings_list
+
+
+    def get_postings_from_disk(self, term):
+        print('These dont have any positions?')

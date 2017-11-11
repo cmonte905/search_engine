@@ -19,6 +19,7 @@ class index_writer():
         # print('Using the tell method on an empty file: ', index_binary_file.tell())
 
         for key in sorted_key_list:
+            print('Key:', key)
             # print('Using the tell method, non byte:', index_binary_file.tell())
             position_term_db.add_term(key, index_binary_file.tell())
             disk_write_list = []
@@ -34,16 +35,13 @@ class index_writer():
             # print('Position that is getting stored in DB:', position_term_db.get_term(key))
             # print('Using the tell method on a file that has something written to it: ', index_binary_file.tell())
 
-            disk_write_list.append(df)
-
-            # print('Key:', key, '| DF', df)  # No need to gaps this
             postings = current_index[key]
             for i in range(len(current_index[key])):
                 # TODO gaps seems to be working
                 if i == 0:
                     doc_id = postings[i].get_document_id()
                 else:
-                    doc_id = postings[i].get_document_id() - doc_id
+                    doc_id = postings[i].get_document_id() - postings[i-1].get_document_id()
 
                 disk_write_list.append(doc_id)
 
@@ -63,9 +61,9 @@ class index_writer():
                         index_binary_file.write(pack('>I', tf[j]))
                     else:
                         disk_write_list.append(tf[j] - tf[j - 1])
-                        index_binary_file.write(pack('>I', tf[j - 1]))
+                        index_binary_file.write(pack('>I', tf[j] - tf[j - 1]))
                         # print('Position p:', tf[j])
 
         position_term_db.print_db()
-        position_term_db.close_connection()
+        position_term_db.close_connection_commit()
         index_binary_file.close()

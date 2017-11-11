@@ -37,6 +37,9 @@ class position_db:
             print('TERM: {0} \t POSITION: {1}'.format(str(row[0]), str(row[1])))
 
     # Commit all changes and close connection
-    def close_connection(self):
+    def close_connection_commit(self):
         self.m_db_connection.commit()
+        self.m_db_connection.close()
+
+    def close_connection(self):
         self.m_db_connection.close()

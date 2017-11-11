@@ -1,5 +1,4 @@
 from os import path, chdir, listdir, getcwd
-from struct import pack
 import json
 import string
 import pprint
@@ -8,6 +7,7 @@ import unidecode
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
+from disk_inverted_index import disk_inverted_index
 from posting import posting
 from index_writer import index_writer
 from kgram_index import kgram_index
@@ -165,10 +165,10 @@ def main():
 
     # TODO This is for testing purposes, so i can compare output
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
-    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
+    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
     cwd = getcwd()
     start_time = time.time()
-    init(test_dir)
+    # init(test_dir)
     chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
     print("--- %s seconds ---" % str((time.time() - start_time) / 60))
 
@@ -193,13 +193,62 @@ def main():
     # ------------------------------------------------------------------------------------------------------------
 
     position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test.db')
-    print('Position that is getting stored in DB for your:', position_term_db.get_term('your')[0])
-    print('Position that is getting stored in DB for you:', position_term_db.get_term('you')[0])
-    # zip_file_loc = position_term_db.get_term('zip')[0]
-    # print(zip_file_loc)
+    # print('Position that is getting stored in DB for your:', position_term_db.get_term('your')[0])
+    # print('Position that is getting stored in DB for you:', position_term_db.get_term('you')[0])
+    stemmer = Porter2Stemmer()
+    t = stemmer.stem('baseball')
+    file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
+    read_index_bin = open('index.bin', 'rb')
+    print('File location:', file_loc)
+    read_index_bin.seek(file_loc)
+    raw_df = read_index_bin.read(4)
+    print('Raw DF from file: ', raw_df)
+    dec_df = int.from_bytes(raw_df, byteorder='big')
+    vl_pos = [dec_df]
+    for i in range(dec_df):
 
-    # read_index_bin = open('index.bin', 'rb')
-    # print('Using seek to read from bin file', read_index_bin.seek())
+        if i == 0:
+            converted_doc_id = int.from_bytes(read_index_bin.read(4), byteorder='big')
+        else:
+            converted_doc_id = converted_doc_id + int.from_bytes(read_index_bin.read(4), byteorder='big')
+        # print('Doc ID: ', converted_doc_id)
+        vl_pos.append(converted_doc_id)
+        converted_tf = int.from_bytes(read_index_bin.read(4), byteorder='big')
+        # print('TF: ', converted_tf)
+        vl_pos.append(converted_tf)
+        for j in range(converted_tf):
+            if j == 0:
+                converted_pos = int.from_bytes(read_index_bin.read(4), byteorder='big')
+            else:
+                converted_pos = converted_pos + int.from_bytes(read_index_bin.read(4), byteorder='big')
+            # print('Position ', j, ':', converted_pos)
+            vl_pos.append(converted_pos)
+    print('List with pos for baseball', vl_pos)
+
+    # Reading stuff now without the positions included
+    read_index_bin.seek(file_loc)
+    raw_df = read_index_bin.read(4)
+    # print('Raw DF from file: ', raw_df)
+    dec_df = int.from_bytes(raw_df, byteorder='big')
+    # print('\nReading from the file, now without positions')
+    vl_without_pos = [dec_df]
+    for i in range(dec_df):
+        if i == 0:
+            converted_doc_id = int.from_bytes(read_index_bin.read(4), byteorder='big')
+        else:
+            converted_doc_id = converted_doc_id + int.from_bytes(read_index_bin.read(4), byteorder='big')
+        # print('Doc ID: ', converted_doc_id)
+        vl_without_pos.append(converted_doc_id)
+        converted_tf = int.from_bytes(read_index_bin.read(4), byteorder='big')
+        # print('TF: ', converted_tf)
+        vl_without_pos.append(converted_tf)
+        for j in range(converted_tf):
+            # Still reading these bytes to advanced the position of the file
+            read_index_bin.read(4)
+    print('List without pos for baseball:', vl_without_pos)
+
+
+    read_index_bin.close()
 
     # while 1:
     #

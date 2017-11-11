@@ -24,9 +24,9 @@ class disk_inverted_index:
         print('File location:', file_loc)
         read_index_bin.seek(file_loc)
         raw_df = read_index_bin.read(4)
-        print('Raw DF from file: ', raw_df)
+        # print('Raw DF from file: ', raw_df)
         dec_df = int.from_bytes(raw_df, byteorder='big')
-        vl_pos = [dec_df]
+        vocab_list_pos = [dec_df]
         for i in range(dec_df):
 
             if i == 0:
@@ -34,21 +34,20 @@ class disk_inverted_index:
             else:
                 converted_doc_id = converted_doc_id + int.from_bytes(read_index_bin.read(4), byteorder='big')
             # print('Doc ID: ', converted_doc_id)
-            vl_pos.append(converted_doc_id)
+                vocab_list_pos.append(converted_doc_id)
             converted_tf = int.from_bytes(read_index_bin.read(4), byteorder='big')
             # print('TF: ', converted_tf)
-            vl_pos.append(converted_tf)
+            vocab_list_pos.append(converted_tf)
             for j in range(converted_tf):
                 if j == 0:
                     converted_pos = int.from_bytes(read_index_bin.read(4), byteorder='big')
                 else:
                     converted_pos = converted_pos + int.from_bytes(read_index_bin.read(4), byteorder='big')
                 # print('Position ', j, ':', converted_pos)
-                vl_pos.append(converted_pos)
-        print('List with pos for baseball', vl_pos)
+                    vocab_list_pos.append(converted_pos)
         read_index_bin.close()
         position_term_db.close_connection()
-        return vl_pos
+        return vocab_list_pos
 
     def read_without_pos(self, term):
         position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test.db')
@@ -56,33 +55,25 @@ class disk_inverted_index:
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
 
         read_index_bin = open('index.bin', 'rb')
-
-        print('File location:', file_loc)
         read_index_bin.seek(file_loc)
         raw_df = read_index_bin.read(4)
-        print('Raw DF from file: ', raw_df)
 
-        dec_df = int.from_bytes(raw_df, byteorder='big')
-        vl_without_pos = [dec_df]
+        dec_df = int.from_bytes(raw_df, byteorder='big')  # Convert from bytes to int
+        vocab_list_without_pos = [dec_df]  #
         for i in range(dec_df):
             if i == 0:
                 converted_doc_id = int.from_bytes(read_index_bin.read(4), byteorder='big')
             else:
                 converted_doc_id = converted_doc_id + int.from_bytes(read_index_bin.read(4), byteorder='big')
             # print('Doc ID: ', converted_doc_id)
-            vl_without_pos.append(converted_doc_id)
+                vocab_list_without_pos.append(converted_doc_id)
             converted_tf = int.from_bytes(read_index_bin.read(4), byteorder='big')
             # print('TF: ', converted_tf)
-            vl_without_pos.append(converted_tf)
+            vocab_list_without_pos.append(converted_tf)
             for j in range(converted_tf):
                 # Still reading these bytes to advanced the position of the file
                 read_index_bin.read(4)
-        print('List without pos for baseball:', vl_without_pos)
 
         read_index_bin.close()
         position_term_db.close_connection()
-        return vl_without_pos
-
-
-    def get_term_count(self):
-        return len(self.m_vocab_table) / 2
+        return vocab_list_without_pos

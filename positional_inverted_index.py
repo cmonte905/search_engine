@@ -1,5 +1,6 @@
 from posting import posting
 
+
 # Class for storing all functionality of a working index
 class positional_inverted_index:
 

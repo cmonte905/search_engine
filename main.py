@@ -1,4 +1,5 @@
-from os import path, chdir, listdir
+from os import path, chdir, listdir, getcwd
+from struct import pack
 import json
 import string
 import pprint
@@ -8,6 +9,7 @@ import unidecode
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
 from posting import posting
+from index_writer import index_writer
 from kgram_index import kgram_index
 from wildcard import wildcard
 from near import near
@@ -123,8 +125,8 @@ def wild(word_input):
 
     intersected_list = list(set(canidate_lists[0].intersection(*canidate_lists[1:])))
 
-    n = list(map(lambda t : stemmer.stem(t), intersected_list))
-    n = list(map(lambda t : index.get_index()[t], n))
+    n = list(map(lambda t: stemmer.stem(t), intersected_list))
+    n = list(map(lambda t: index.get_index()[t], n))
 
     doc_list = []
     for p_list in n:
@@ -143,7 +145,7 @@ def init(directory):
 
     chdir(directory)
 
-    sorted_files = sorted(listdir(directory), key=lambda x: int(re.sub('\D', '', x)))
+    sorted_files = sorted(listdir(directory), key=lambda x: (int(re.sub('\D', '', x)), x))
     
     for file in sorted_files:
         if file.endswith('.json'):
@@ -159,10 +161,15 @@ def main():
     w = wildcard()
     n = near()
 
-    directory = input('Enter directory for index: ')
+    # directory = input('Enter directory for index: ')  # TODO Revert back to original when done
+
+    # TODO This is for testing purposes, so i can compare output
+    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
+    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
+    cwd = getcwd()
     start_time = time.time()
-    init(directory)
-    chdir('C:\\Users\\Stanl_000\\Documents\\GitHub\\search_engine\\DB')
+    init(test_dir)
+    chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
     print("--- %s seconds ---" % str((time.time() - start_time) / 60))
 
     # Find all .json files in this directory
@@ -177,69 +184,78 @@ def main():
     #for key in index.get_index():
     #    index.print_term_info(key)
 
-    position_term_db = position_db()
-    position_term_db.create_table()
-    for key in index.get_index():
-        position_term_db.add_term(key, 7)
+    # ------------------------------------------------------------------------------------------------------------
+    # Writes to the DB and file
 
-    position_term_db.print_db()
-    position_term_db.close_connection()    
+    # i_writer = index_writer()
+    # i_writer.write_to_disk(index.get_index())
 
-    while 1:
+    # ------------------------------------------------------------------------------------------------------------
 
-        return_docs = []
+    position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test.db')
+    print('Position that is getting stored in DB for your:', position_term_db.get_term('your')[0])
+    print('Position that is getting stored in DB for you:', position_term_db.get_term('you')[0])
+    # zip_file_loc = position_term_db.get_term('zip')[0]
+    # print(zip_file_loc)
 
-        user_string = input("Please enter a word search:\n")
-        # Special Queries
-        if ':' in user_string:
-            if ':q' in user_string:
-                exit()
-            if ':stem' in user_string:
-                stemmer = Porter2Stemmer()
-                print("Will be stemming the token")
-                print(user_string.split(" ")[1])
-                print(stemmer.stem(user_string.split(" ")[1]))
-            if ':index' in user_string:
-                print('Will be indexing folder')
-                init(user_string.split(" ")[1].rstrip().lstrip())
-            if ':vocab' in user_string:
-                pp = pprint.PrettyPrinter(indent=4)
-                pp.pprint(index.get_dictionary())
-                print('Total number of vocabulary terms: ' + str(index.get_term_count()))
-                print('Will be spitting out words')
-        elif '*' in user_string:
-            print("This will get sent of to the wildcard class")
-            return_docs.extend(wild(user_string))
-        elif 'near' in user_string:
-            # Parse NEAR input
-            near_parts = user_string.split(' ')
-            k = near_parts[1].split('/')
-            return_docs.extend(n.near(index, near_parts[0], near_parts[2], int(k[1])))
-        else:
-            if user_string:
-                q = Query(index)
-                return_docs = q.query_parser(user_string)
-                #for i in results_list:
-                    #print('json' + str(i) + '.json')
-                #print('Num of results:\n', len(results_list))
-            else:
-                print('No query entered')
+    # read_index_bin = open('index.bin', 'rb')
+    # print('Using seek to read from bin file', read_index_bin.seek())
 
-        print ('DOC_LIST: ' + str(return_docs))
-
-        # Allow the user to select a document to view
-        doc_list = list(map(document_parser, return_docs))
-        if len(doc_list) != 0:
-            for document in doc_list:
-                print ('Document ' + document)
-            print ('Documents found: ' + str(len(doc_list)))
-            document_selection = input('Please select a document you would like to view: ')
-            while document_selection != 'no':
-                if document_selection in doc_list:
-                    open_file_content(document_selection)
-                document_selection = input('Please select a document you would like to view: ')
-        else:
-            print ('No documents were found')
+    # while 1:
+    #
+    #     return_docs = []
+    #
+    #     user_string = input("Please enter a word search:\n")
+    #     # Special Queries
+    #     if ':' in user_string:
+    #         if ':q' in user_string:
+    #             exit()
+    #         if ':stem' in user_string:
+    #             stemmer = Porter2Stemmer()
+    #             print("Will be stemming the token")
+    #             print(user_string.split(" ")[1])
+    #             print(stemmer.stem(user_string.split(" ")[1]))
+    #         if ':index' in user_string:
+    #             print('Will be indexing folder')
+    #             init(user_string.split(" ")[1].rstrip().lstrip())
+    #         if ':vocab' in user_string:
+    #             pp = pprint.PrettyPrinter(indent=4)
+    #             pp.pprint(index.get_dictionary())
+    #             print('Total number of vocabulary terms: ' + str(index.get_term_count()))
+    #             print('Will be spitting out words')
+    #     elif '*' in user_string:
+    #         print("This will get sent of to the wildcard class")
+    #         return_docs.extend(wild(user_string))
+    #     elif 'near' in user_string:
+    #         # Parse NEAR input
+    #         near_parts = user_string.split(' ')
+    #         k = near_parts[1].split('/')
+    #         return_docs.extend(n.near(index, near_parts[0], near_parts[2], int(k[1])))
+    #     else:
+    #         if user_string:
+    #             q = Query(index)
+    #             return_docs = q.query_parser(user_string)
+    #             #for i in results_list:
+    #                 #print('json' + str(i) + '.json')
+    #             #print('Num of results:\n', len(results_list))
+    #         else:
+    #             print('No query entered')
+    #
+    #     print ('DOC_LIST: ' + str(return_docs))
+    #
+    #     # Allow the user to select a document to view
+    #     doc_list = list(map(document_parser, return_docs))
+    #     if len(doc_list) != 0:
+    #         for document in doc_list:
+    #             print ('Document ' + document)
+    #         print ('Documents found: ' + str(len(doc_list)))
+    #         document_selection = input('Please select a document you would like to view: ')
+    #         while document_selection != 'no':
+    #             if document_selection in doc_list:
+    #                 open_file_content(document_selection)
+    #             document_selection = input('Please select a document you would like to view: ')
+    #     else:
+    #         print ('No documents were found')
 
 
 if __name__ == "__main__":

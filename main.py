@@ -9,12 +9,11 @@ import unidecode
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
 from disk_inverted_index import disk_inverted_index
-from posting import posting
 from index_writer import index_writer
 from kgram_index import kgram_index
 from wildcard import wildcard
 from near import near
-from pos_db import position_db
+from rank import rank
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -25,7 +24,6 @@ import time
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
 index = positional_inverted_index()
-corpus_size = 0
 
 # List of vocab tokens for terms in the corpus
 # Dictionary <String : Set<String>>
@@ -81,10 +79,10 @@ def index_file(file_name, documentID):
                 else:
                     index.add_term(stemmer.stem(term), documentID, position)
                 position += 1
-                if not weight_map.get(term):
+                if term not in weight_map:
                     weight_map[term] = 1
                 else:
-                    weight_map[term] += 1
+                    weight_map[term] = weight_map[term] + 1
 
     except FileNotFoundError as e:
         print(e)
@@ -92,10 +90,11 @@ def index_file(file_name, documentID):
     i_writer = index_writer()
     # Gets the Wdt's of the terms in the file
     for tf in weight_map:
+        print('Term frequencies for', tf, ':', weight_map[tf])
         wdt += pow(1 + log(weight_map[tf]), 2)
-    print('Wdt: ', wdt)
     Ld = sqrt(wdt)
-    print('Ld of ', file_name, ':', Ld)
+    print('Ld for doc', documentID, ':', Ld)
+    print()
     i_writer.write_ld(Ld)
 
 
@@ -149,6 +148,7 @@ def wild(word_input):
     # return list of docs for the word found
     return doc_list
 
+
 def document_parser(id):
     return str('json' + str(id) + '.json')
 
@@ -179,13 +179,14 @@ def main():
     # directory = input('Enter directory for index: ')  # TODO Revert back to original when done
 
     # TODO This is for testing purposes, so i can compare output
-    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
+    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/m_test'
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
     cwd = getcwd()
     start_time = time.time()
     # init(test_dir)
     chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
     print("--- %s seconds ---" % str((time.time() - start_time) / 60))
+    corpus_size = len(listdir(test_dir))
 
     # Find all .json files in this directory
     # directory = path.dirname(path.realpath(__file__)) + '/corpus/all-nps-sites/'
@@ -222,12 +223,30 @@ def main():
     #     print(i)
     #     print('Ld:', i_reader.read_ld(i.get_document_id()))
 
-    print('Term that we get back: baseball')
-    print(i_reader.read_with_pos('baseball'))
-    print(i_reader.read_without_pos('baseball'))
-    for i in i_reader.get_pos_postings_from_disk('baseball'):
-        print(i)
-        print('Ld:', i_reader.read_ld(i.get_document_id()))
+    # print('Term that we get back: baseball')
+    # print(i_reader.read_with_pos('baseball'))
+    # print(i_reader.read_without_pos('baseball'))
+    # for i in i_reader.get_postings_from_disk('baseball'):
+    #     print(i)
+    #     print('Ld:', i_reader.read_ld(i.get_document_id()))
+
+    print(i_reader.read_without_pos('i'))
+    print(i_reader.read_without_pos('am'))
+    r = rank()
+    result_list = r.get_rank('I am', corpus_size)
+    print('Results of rank', result_list)
+
+    # result_list = r.get_rank('am', corpus_size)
+    # print('Results of rank', result_list)
+
+    """
+        Query: "I am" -> 
+        1. Doc1 6.439714292938463
+        2. Doc2 4.910120901966430
+        Query "am" ->
+        1. Doc2 2.4550604509832152
+        2. Doc1 2.3911482964698387
+    """
 
     # print(i_reader.read_ld(1))
     # print(i_reader.read_ld(2))

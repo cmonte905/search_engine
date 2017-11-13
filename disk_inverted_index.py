@@ -1,7 +1,7 @@
 from porter2stemmer import Porter2Stemmer
 from pos_db import position_db
 from struct import unpack
-from posting import posting
+from posting import posting, positionless_postings
 
 stemmer = Porter2Stemmer()
 
@@ -14,9 +14,8 @@ class disk_inverted_index:
     """
 
     def read_with_pos(self, term):
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
-        # print('Position that is getting stored in DB for your:', position_term_db.get_term('your')[0])
-        # print('Position that is getting stored in DB for you:', position_term_db.get_term('you')[0])
+        # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
 
         t = stemmer.stem(term)
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
@@ -50,11 +49,13 @@ class disk_inverted_index:
         return vocab_list_pos
 
     def read_without_pos(self, term):
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
+        # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
         t = stemmer.stem(term)
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
 
-        read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index.bin', 'rb')
+        # read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index.bin', 'rb')
+        read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index_test.bin', 'rb')
         read_index_bin.seek(file_loc)
         raw_df = read_index_bin.read(4)
 
@@ -67,18 +68,18 @@ class disk_inverted_index:
                 converted_doc_id = converted_doc_id + int.from_bytes(read_index_bin.read(4), byteorder='big')
             vocab_list_without_pos.append(converted_doc_id)  # Adds the doc id
             converted_tf = int.from_bytes(read_index_bin.read(4), byteorder='big')
-            # print('TF: ', converted_tf)
             vocab_list_without_pos.append(converted_tf)  # Adds the tf
-            for j in range(converted_tf):
-                # Still reading these bytes to advanced the position of the file
-                read_index_bin.read(4)
+
+            # Still reading these bytes to advanced the position of the file and avoid all of the positions
+            read_index_bin.read(4 * converted_tf)
 
         read_index_bin.close()
         position_term_db.close_connection()
         return vocab_list_without_pos
 
     def read_ld(self, doc_id):
-        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'rb')
+        # weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'rb')
+        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_test.bin', 'rb')
         weight_bin_file.seek(doc_id * 8 - 8)
         ld = weight_bin_file.read(8)
         readable_ld = unpack('d', ld)
@@ -107,12 +108,9 @@ class disk_inverted_index:
             pos_list = p_list[counter:tf+counter]
             counter += tf
             postings_list.append(posting(doc_id, pos_list))
-        print(postings_list)
         return postings_list
 
-
     def get_postings_from_disk(self, term):
-        print('These dont have any positions?')
         postings_list = []
         p_list = self.read_without_pos(term)
         counter = 0
@@ -123,8 +121,5 @@ class disk_inverted_index:
             counter += 1
             tf = p_list[counter]
             counter += 1
-            pos_list = p_list[counter:tf + counter]
-            counter += tf
-            postings_list.append(posting(doc_id, pos_list))
-        print(postings_list)
+            postings_list.append(positionless_postings(doc_id, tf))
         return postings_list

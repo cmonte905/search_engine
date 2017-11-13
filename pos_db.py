@@ -29,7 +29,6 @@ class position_db:
         p = self.m_db_cursor.execute('SELECT POSITION FROM term_pos WHERE TERM=?', [term])
         return p.fetchone()
 
-
     # Print contents of database
     def print_db(self):
         term_row = self.m_db_cursor.execute('SELECT * FROM term_pos')

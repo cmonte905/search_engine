@@ -179,7 +179,8 @@ def main():
     # directory = input('Enter directory for index: ')  # TODO Revert back to original when done
 
     # TODO This is for testing purposes, so i can compare output
-    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/m_test'
+    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/m_test'
+    test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/all-nps-sites'
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
     cwd = getcwd()
     start_time = time.time()
@@ -230,11 +231,17 @@ def main():
     #     print(i)
     #     print('Ld:', i_reader.read_ld(i.get_document_id()))
 
-    print(i_reader.read_without_pos('i'))
-    print(i_reader.read_without_pos('am'))
+
+    # print(i_reader.read_without_pos('i'))
+    # print(i_reader.read_without_pos('am'))
     r = rank()
-    result_list = r.get_rank('I am', corpus_size)
-    print('Results of rank', result_list)
+    result_list = r.get_rank('wildfires in yosemite', corpus_size)
+
+    print(result_list)
+
+    # result_list = r.get_rank('I am', corpus_size)
+    # print('Results of rank', result_list)
+
 
     # result_list = r.get_rank('am', corpus_size)
     # print('Results of rank', result_list)

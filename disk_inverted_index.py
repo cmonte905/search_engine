@@ -15,7 +15,8 @@ class disk_inverted_index:
 
     def read_with_pos(self, term):
         # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
+        # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/nps_disk.db')
 
         t = stemmer.stem(term)
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
@@ -50,12 +51,12 @@ class disk_inverted_index:
 
     def read_without_pos(self, term):
         # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/nps_disk.db')
         t = stemmer.stem(term)
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
 
         # read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index.bin', 'rb')
-        read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index_test.bin', 'rb')
+        read_index_bin = open('/Users/Cemo/Documents/cecs429/search_engine/index_nps.bin', 'rb')
         read_index_bin.seek(file_loc)
         raw_df = read_index_bin.read(4)
 
@@ -79,7 +80,7 @@ class disk_inverted_index:
 
     def read_ld(self, doc_id):
         # weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'rb')
-        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_test.bin', 'rb')
+        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_nps.bin', 'rb')
         weight_bin_file.seek(doc_id * 8 - 8)
         ld = weight_bin_file.read(8)
         readable_ld = unpack('d', ld)

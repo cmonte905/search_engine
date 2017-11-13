@@ -11,12 +11,16 @@ class index_writer():
         :return:
         """
         # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
+        # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/nps_disk.db')
         position_term_db.create_table()
         current_index = index
         sorted_key_list = sorted(index)
 
-        index_binary_file = open('index_test.bin', 'wb')
+        # index_binary_file = open('index_test.bin', 'wb')
+        index_binary_file = open('index_nps.bin', 'wb')
+
+
         # print('Using the tell method on an empty file: ', index_binary_file.tell())
 
         for key in sorted_key_list:
@@ -71,6 +75,7 @@ class index_writer():
 
     def write_ld(self, Ld):
         # ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'ab')
-        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_test.bin', 'ab')
+        # ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_test.bin', 'ab')
+        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_nps.bin', 'ab')
         ld_doc.write(pack('d', Ld))
         ld_doc.close()

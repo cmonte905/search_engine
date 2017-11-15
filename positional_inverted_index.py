@@ -13,11 +13,17 @@ class positional_inverted_index:
     
     # Add a term into the index
     def add_term(self, term, documentID, position):
+        # if the term already exists in the index
         if (term in self.m_index):
-            term_posting = posting(documentID, position)
-            self.m_index[term].append(term_posting)
+            # if there is already a posting with that docID, add the position to the end
+            if self.m_index[term][-1].get_document_id() == documentID:
+                self.m_index[term][-1].get_positions().append(position)
+            # if not, add a new posting to it
+            else:
+                term_posting = posting(documentID, [position])
+                self.m_index[term].append(term_posting)
         else:
-            term_posting = posting(documentID, position)
+            term_posting = posting(documentID, [position])
             self.m_index[term] = [term_posting]
 
     # Access the list of postings for a term
@@ -53,16 +59,3 @@ class positional_inverted_index:
             id_list.add(post.get_document_id())
 
         return id_list
-
-    def get_all_doc_ids_index(self, term):
-        # return list(map(lambda posting : posting.get_document_id(), self.m_index.get_postings(term)))
-        
-        id_list = set()
-        index_list = set()
-        for i in range(0, len(self.m_index[term])):
-
-            id_list.add(self.m_index[term][i].get_document_id())
-            index_list.add(i)
-
-        return list(zip(id_list, index_list))
-

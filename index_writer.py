@@ -1,6 +1,7 @@
 from struct import pack
 from pos_db import position_db
-
+from VBE import vbe
+from porter2stemmer import Porter2Stemmer
 
 class index_writer():
 
@@ -10,35 +11,23 @@ class index_writer():
         :param index: Index gets passed a dictionary
         :return:
         """
-        # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test1.db')
-        # position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/disk_test2.db')
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/nps_disk.db')
+        stem = Porter2Stemmer()
+        vb = vbe()
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/term_positions.db')
         position_term_db.create_table()
         current_index = index
         sorted_key_list = sorted(index)
-
-        # index_binary_file = open('index_test.bin', 'wb')
-        index_binary_file = open('index_nps.bin', 'wb')
-
-
-        # print('Using the tell method on an empty file: ', index_binary_file.tell())
+        index_binary_file = open('index.bin', 'wb')
 
         for key in sorted_key_list:
-            print('Key:', key)
-            # print('Using the tell method, non byte:', index_binary_file.tell())
-            position_term_db.add_term(key, index_binary_file.tell())
+            if not key:
+                continue
+            position_term_db.add_term(stem.stem(key.lower()), index_binary_file.tell())
+
             disk_write_list = []
             df = len(current_index[key])
-            # print('Using the tell method, using pack method for file pos.:', pack('>I', index_binary_file.tell()))
-            # print('DF in dec: ', df)
-            # print('DF in dec using pack: ', pack('>I', df))
-            index_binary_file.write(pack('>I', df))
-            # print('Pack value', pack('>I', df))
-            # print('Non Packed value', df)
-            # print('Position that is getting stored in DB:', position_term_db.get_term(key)[0])
-            # print('Position that is getting stored in DB, using unpack:', unpack('I', position_term_db.get_term(key)[0]))
-            # print('Position that is getting stored in DB:', position_term_db.get_term(key))
-            # print('Using the tell method on a file that has something written to it: ', index_binary_file.tell())
+            for number in vb.encode_number(df):
+                index_binary_file.write(pack(">B", number))
 
             postings = current_index[key]
             for i in range(len(current_index[key])):
@@ -50,32 +39,30 @@ class index_writer():
 
                 disk_write_list.append(doc_id)
 
-                index_binary_file.write(pack('>I', doc_id))
+                for number in vb.encode_number(doc_id):
+                    index_binary_file.write(pack(">B", number))
 
                 tf = postings[i].positions_list
-
                 disk_write_list.append(len(tf))
 
-                index_binary_file.write(pack('>I', len(tf)))
-                # print('Key:', key, '| doc id:', doc_id)
-                # print('TF: ', len(tf))  # No need to gaps this shit either
+                for number in vb.encode_number(len(tf)):
+                    index_binary_file.write(pack(">B", number))
                 for j in range(len(tf)):
                     # TODO gaps seems to be working
                     if j == 0:
                         disk_write_list.append(tf[j])
-                        index_binary_file.write(pack('>I', tf[j]))
+                        vb.encode_number(tf[j])
+                        for number in vb.encode_number(tf[j]):
+                            index_binary_file.write(pack(">B", number))
+
                     else:
                         disk_write_list.append(tf[j] - tf[j - 1])
-                        index_binary_file.write(pack('>I', tf[j] - tf[j - 1]))
-                        # print('Position p:', tf[j])
-
-        position_term_db.print_db()
+                        for number in vb.encode_number(tf[j] - tf[j - 1]):
+                            index_binary_file.write(pack(">B", number))
         position_term_db.close_connection_commit()
         index_binary_file.close()
 
     def write_ld(self, Ld):
-        # ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'ab')
-        # ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_test.bin', 'ab')
-        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_nps.bin', 'ab')
+        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'ab')
         ld_doc.write(pack('d', Ld))
         ld_doc.close()

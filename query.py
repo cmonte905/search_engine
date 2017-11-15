@@ -1,5 +1,6 @@
-from re import sub, findall, split
+from re import sub, findall
 from porter2stemmer import Porter2Stemmer
+from disk_inverted_index import disk_inverted_index
 import pprint
 
 pp = pprint.PrettyPrinter(indent=4)
@@ -7,13 +8,9 @@ stemmer = Porter2Stemmer()
 
 
 class Query:
-
-    def __init__(self, postings):
-        self.index = postings
-        self.postings = postings.get_index()
-
-        self.q_dict = {}
-
+    """
+    Got to fix this shit later, was too busy to do so
+    """
     def plus_parse(self, string):
         return string.split('+')
 
@@ -66,23 +63,23 @@ class Query:
         else:
             results_lists = or_list[0]
             for i in range(len(or_list) - 1):
-                results_lists = list(self.or_list(results_lists, or_list[i +1]))
+                results_lists = list(self.or_list(results_lists, or_list[i + 1]))
             results_lists.sort()
             return results_lists
 
 
     def query_process(self, string):
         temp_list = []
-        if stemmer.stem(string) in self.postings:
-            for t in self.postings[stemmer.stem(string)]:  # adds doc id to a temporary list
-                temp_list.append(int(t.get_document_id()))
-        else:
-            print("Word", string, "not in the index")
-        temp_list.sort
+        disk_reader = disk_inverted_index()
+        postings = disk_reader.get_pos_postings_from_disk(stemmer.stem(string))
+
+        for t in postings:  # adds doc id to a temporary list
+            temp_list.append(int(t.get_document_id()))
         return temp_list
 
     def phrase_process(self, strings):  # Testing -> Prairie National, Site Indentification
         string_parsed = strings.split('-')
+        disk_reader = disk_inverted_index()
         doc_list = []
         stemmer = Porter2Stemmer()
 
@@ -96,9 +93,9 @@ class Query:
             # Max number of iterations is the max size of the bigger list
             # max_length = max(len(index.get_postings(first_term)), len(index.get_postings(second_term)))
             if len(current_list) == 0:  # If first time going through, then first word will be our postings
-                f_postings_list = self.index.get_postings(first_term)
+                f_postings_list = disk_reader.get_pos_postings_from_disk(first_term)
 
-            s_postings_list = self.index.get_postings(second_term)
+            s_postings_list = disk_reader.get_pos_postings_from_disk(second_term)
             i = 0
             j = 0
 

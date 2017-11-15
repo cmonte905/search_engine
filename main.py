@@ -172,9 +172,8 @@ def init(directory):
 
 def main():
     # Instances
-    w = wildcard()
+    # w = wildcard()
     n = near()
-
     # directory = input('Enter directory for index: ')  # TODO Revert back to original when done
 
     # TODO This is for testing purposes, so i can compare output
@@ -186,12 +185,10 @@ def main():
     corpus_size = len(listdir('/Users/Cemo/Documents/cecs429/search_engine/corpus/all-nps-sites'))
 
     # init(test_dir)
-
-
-    chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
     print("--- %s seconds ---" % str((time.time() - start_time) / 60))
 
     while 1:
+        chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
         query_or_index = input('[1] - Query\n[2] - Index\n')
         print(query_or_index)
         if query_or_index == '1':

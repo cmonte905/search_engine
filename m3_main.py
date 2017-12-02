@@ -25,6 +25,7 @@ index = positional_inverted_index()
 # Dictionary <String : Set<String>>
 avg_doc_length = 0
 
+
 # Use this index_file for .json files
 def index_file(file_name, documentID):
     stemmer = Porter2Stemmer()
@@ -111,6 +112,7 @@ def main():
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/kumin'
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
+
     cwd = getcwd()
     start_time = time.time()
 

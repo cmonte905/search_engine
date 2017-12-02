@@ -27,18 +27,12 @@ class rank:
             for p in postings:
                 # Ad = 0  # Accumilator?
                 Wdt = 1 + log(p.get_term_frequency())
-                # print('Wdt of word', t, ':', Wdt, 'in document', p.get_document_id(), 'with a tf of', p.get_term_frequency())
-                # print('Wdt * Wqt = ', (Wdt * Wqt))
                 if p.get_document_id() not in Ad:
                     Ad[p.get_document_id()] = 0
-                # print('The accumalator for document', p.get_document_id(), Ad[p.get_document_id()])
                 Ad[p.get_document_id()] = Ad[p.get_document_id()] + (Wdt * Wqt)
-                # print('The accumalator for document', p.get_document_id(), Ad[p.get_document_id()])
-                # print()
         inverse_Ad = {}
         for a in Ad:
             ld = disk_reader.read_ld(a)  # Gets the Ld from disk
-            # print('Ld for the document', a, ':', ld)
             Ad[a] = Ad[a] / ld  # Changes the accumulator to be (Σ Wqt*Wdt)/Ld for each document
             # print('The value after calcuations', Ad[a])\
             inverse_Ad[Ad[a]] = a

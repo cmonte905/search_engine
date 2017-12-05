@@ -83,7 +83,6 @@ def open_file_content(file_name):
         print (article_data['url'] + '\n')
 
 
-
 def document_parser(id):
     return str('json' + str(id) + '.json')
 
@@ -110,8 +109,14 @@ def main():
 
     # TODO This is for testing purposes, so i can compare output
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
-    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/kumin'
     # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
+
+    # Federalist papers n shit
+    jay_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/JAY'
+    hamilton_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/HAMILTON'
+    madison_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/MADISON'
+    disputed_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/DISPUTED'
+
 
     cwd = getcwd()
     start_time = time.time()

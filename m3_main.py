@@ -43,8 +43,6 @@ def index_file(file_name, documentID):
             body = unidecode.unidecode(article_data['body']).lower().translate(punctuation).split(' ')
             body = list(filter(lambda t: t != '' and t != '-', body)) # remove single spaces and single hyphens
 
-            #kgram stuff here
-
             position = 0
             for term in body:
                 # take care of hyphenated words
@@ -74,15 +72,6 @@ def index_file(file_name, documentID):
     i_writer.write_ld(Ld)
 
 
-# If the user selects a certain document, for displaying the original content
-def open_file_content(file_name):
-    with open(file_name, 'r') as json_file:
-        article_data = json.load(json_file)
-        print(article_data['title'] + '\n')
-        print (article_data['body'] + '\n')
-        print (article_data['url'] + '\n')
-
-
 def document_parser(id):
     return str('json' + str(id) + '.json')
 
@@ -90,12 +79,11 @@ def document_parser(id):
 def init(directory):
     file_names = []  # Names of files
     index.clean()
-    vocab = {}
     chdir(directory)
     sorted_files = sorted(listdir(directory), key=lambda x: (int(re.sub('\D', '', x)), x))
 
     for file in sorted_files:
-        if file.endswith('.json'):
+        if file.endswith('.txt'):
             file_names.append(str(file))
 
     # Index each file and mark its Document ID

@@ -34,9 +34,9 @@ class rank:
         for a in Ad:
             ld = disk_reader.read_ld(a)  # Gets the Ld from disk
             Ad[a] = Ad[a] / ld  # Changes the accumulator to be (Σ Wqt*Wdt)/Ld for each document
-            # print('The value after calcuations', Ad[a])\
             inverse_Ad[Ad[a]] = a
             heappush(result_list, (Ad[a] * -1))  # Fucking python only has min heap, not max heap
+
         first_ten = self.get_first_ten(result_list)
         for i in first_ten:
             print('Doc:', inverse_Ad[i], '| rank: ', i)

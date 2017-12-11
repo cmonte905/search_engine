@@ -17,11 +17,11 @@ class disk_inverted_index:
         :return: List of integers that will be converted into postings
         """
         vb = vbe()
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/term_positions.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/term_positions_federalists.db')
         t = stemmer.stem(term.lower())
         file_loc = int(hex(position_term_db.get_term(t)[0]), 16)
 
-        read_index_bin = open('index.bin', 'rb')
+        read_index_bin = open('index.bin_federalists', 'rb')
         read_index_bin.seek(file_loc)
         # raw_df = read_index_bin.read(4)
         df = vb.decode(self.readFromFile(read_index_bin))[0]
@@ -77,7 +77,7 @@ class disk_inverted_index:
         :param doc_id: Document id
         :return: The ld of a document in a readable format
         """
-        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'rb')
+        weight_bin_file = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_federalists.bin', 'rb')
         weight_bin_file.seek(doc_id * 8 - 8)
         ld = weight_bin_file.read(8)
         readable_ld = unpack('d', ld)

@@ -20,6 +20,7 @@ all_docs_index = positional_inverted_index()
 doc_wdt = {}
 ham_vector = {}
 mad_vector = {}
+jay_vector = {}
 # List of vocab tokens for terms in the corpus
 # Dictionary <String : Set<String>>
 
@@ -55,27 +56,33 @@ def index_file(file_name, documentID, index):
     except FileNotFoundError as e:
         print(e)
 
+    score_map = {}
     wdt = 0
     # Gets the Wdt's of the terms in the file
     for tf in weight_map:
-        wdt += pow(1 + log(weight_map[tf]), 2)
+        score = pow(1 + log(weight_map[tf]), 2)
+        score_map[tf] = score
+        wdt += score**2
     Ld = sqrt(wdt)
+    length = 0
+    for tf in score_map:
+        score_map[tf] = score_map[tf]/Ld
+        length += score_map[tf]**2
 
-    for tf in weight_map:
-        weight_map[tf] = weight_map[tf]/Ld
-
-    doc_wdt[file_name] = weight_map
+    doc_wdt[file_name] = score_map
 
 
 def train_rocchio(class_list, docs, name):
     if name == 'hamilton':
         vec = ham_vector
-    else:
+    elif name == 'madison':
         vec = mad_vector
+    else:
+        vec = jay_vector
+
     for i in docs:
         if i in class_list:
             inner_map = docs[i]
-            # print(name, ': ', i)
             for j in inner_map:
                 if j not in vec:
                     vec[j] = inner_map[j]
@@ -87,24 +94,40 @@ def train_rocchio(class_list, docs, name):
 
 
 def apply_rocchio(disputed_file):
-    scores = [0.0, 0.0]  # Hamilton and Madison respectively
+    scores = [0.0, 0.0, 0.0]  # Hamilton and Madison respectively
     disputed_index = doc_wdt[disputed_file]
 
     sum_vec = 0.0
     for i in disputed_index:
-        if i in ham_vector and (ham_vector[i] - disputed_index[i]) >= 0:
+        # if i in ham_vector and (ham_vector[i] - disputed_index[i]) >= 0:
+        if i in ham_vector:
             sum_vec += pow(ham_vector[i] - disputed_index[i], 2)
+        else:
+            sum_vec += pow(disputed_index[i], 2)
     scores[0] = sqrt(sum_vec)
     sum_vec = 0.0
     for i in disputed_index:
-        if i in mad_vector and (mad_vector[i] - disputed_index[i]) >= 0:
-            sum_vec += pow(ham_vector[i] - disputed_index[i], 2)
+        # if i in mad_vector and (mad_vector[i] - disputed_index[i]) >= 0:
+        if i in mad_vector:
+            sum_vec += pow(mad_vector[i] - disputed_index[i], 2)
+        else:
+            sum_vec += pow(disputed_index[i], 2)
     scores[1] = sqrt(sum_vec)
+    sum_vec = 0.0
+    for i in disputed_index:
+        # if i in mad_vector and (mad_vector[i] - disputed_index[i]) >= 0:
+        if i in jay_vector:
+            sum_vec += pow(jay_vector[i] - disputed_index[i], 2)
+        else:
+            sum_vec += pow(disputed_index[i], 2)
+    scores[2] = sqrt(sum_vec)
 
-    if scores[0] < scores[1]:
-        print('{0} was written by Hamilton'.format(disputed_file))
+    if scores[0] < scores[1] and scores[0] < scores[2]:
+        print('{0} was written by Hamilton {1}'.format(disputed_file, scores))
+    elif scores[1] < scores[0] and scores[1] < scores[2]:
+        print('{0} was written by Madison {1}'.format(disputed_file, scores))
     else:
-        print('{0} was written by Madison'.format(disputed_file))
+        print('{0} was written by Jay {1}'.format(disputed_file, scores))
 
 
 def get_list_files(directory):
@@ -149,6 +172,7 @@ def main():
 
     train_rocchio(hamilton_files, doc_wdt, 'hamilton')
     train_rocchio(madison_files, doc_wdt, 'madison')
+    train_rocchio(jay_files, doc_wdt, 'jay')
 
     for i in disputed_files:
         apply_rocchio(i)

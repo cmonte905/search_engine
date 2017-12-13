@@ -6,8 +6,6 @@ import pprint
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
-from index_writer import index_writer
-from rank import rank
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
@@ -25,13 +23,11 @@ mad_vector = {}
 # List of vocab tokens for terms in the corpus
 # Dictionary <String : Set<String>>
 
-# Use this index_file for .json files
 def index_file(file_name, documentID, index):
     stemmer = Porter2Stemmer()
     # Dealing with punctuation
     p = dict.fromkeys(string.punctuation)
     p.pop('-')  # we need to deal with hyphens
-    punctuation = str.maketrans(p)
     weight_map = {}
 
     try:
@@ -60,7 +56,6 @@ def index_file(file_name, documentID, index):
         print(e)
 
     wdt = 0
-    # i_writer = index_writer()
     # Gets the Wdt's of the terms in the file
     for tf in weight_map:
         wdt += pow(1 + log(weight_map[tf]), 2)
@@ -70,7 +65,6 @@ def index_file(file_name, documentID, index):
         weight_map[tf] = weight_map[tf]/Ld
 
     doc_wdt[file_name] = weight_map
-    # i_writer.write_ld(Ld)
 
 
 def train_rocchio(class_list, docs, name):
@@ -101,14 +95,16 @@ def apply_rocchio(disputed_file):
         if i in ham_vector and (ham_vector[i] - disputed_index[i]) >= 0:
             sum_vec += pow(ham_vector[i] - disputed_index[i], 2)
     scores[0] = sqrt(sum_vec)
-
     sum_vec = 0.0
     for i in disputed_index:
         if i in mad_vector and (mad_vector[i] - disputed_index[i]) >= 0:
             sum_vec += pow(ham_vector[i] - disputed_index[i], 2)
     scores[1] = sqrt(sum_vec)
-    print('File name:', disputed_file, scores)
-    pass
+
+    if scores[0] < scores[1]:
+        print('{0} was written by Hamilton'.format(disputed_file))
+    else:
+        print('{0} was written by Madison'.format(disputed_file))
 
 
 def get_list_files(directory):
@@ -141,33 +137,22 @@ def main():
     start_time = time.time()
     # Federalist papers n shit
     all_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/ALL'
-    # ------------------------------------------------------------------------------------------
-    # Get rid of one things have been initialized
     init(all_files, all_docs_index)
-    # i_writer = index_writer()
-    # i_writer.write_index_to_disk(index.get_index())
-    # ------------------------------------------------------------------------------------------
+
     jay_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/JAY')
+
     hamilton_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/HAMILTON')
     madison_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/MADISON')
 
     disputed_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/DISPUTED')
-
     chdir(cwd)  # come back to where the main is for the reading of files
 
     train_rocchio(hamilton_files, doc_wdt, 'hamilton')
     train_rocchio(madison_files, doc_wdt, 'madison')
-    # pp = pprint.PrettyPrinter(indent=4)
-    # pp.pprint(ham_vector)
-    # pp.pprint(mad_vector)
+
     for i in disputed_files:
         apply_rocchio(i)
-
-    corpus_size = len(listdir(all_files))
-    print("Corpus size of all federalist papers are {0}".format(corpus_size))
-
-    # init(test_dir)
-    print("--- %s seconds ---" % str((time.time() - start_time) / 60))
+    print("\n--- %s seconds ---" % str((time.time() - start_time) / 60))
 
 if __name__ == "__main__":
     main()

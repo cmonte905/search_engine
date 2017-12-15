@@ -1,29 +1,27 @@
-from os import chdir, listdir, getcwd
+from os import listdir
 from math import log, sqrt, pow
 import string
 import re
-import pprint
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-import time
 
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
 all_docs_index = positional_inverted_index()
-
-
 doc_wdt = {}
 ham_vector = {}
 mad_vector = {}
 jay_vector = {}
-# List of vocab tokens for terms in the corpus
-# Dictionary <String : Set<String>>
 
-def index_file(file_name, documentID, index):
+# List of vocab tokens for terms in the corpus
+# Dictionary <String : List[String]>
+
+
+def index_file(directory, file_name, documentID, index):
     stemmer = Porter2Stemmer()
     # Dealing with punctuation
     p = dict.fromkeys(string.punctuation)
@@ -31,7 +29,7 @@ def index_file(file_name, documentID, index):
     weight_map = {}
 
     try:
-        with open(file_name) as txt_file:
+        with open(directory + file_name) as txt_file:
             body = txt_file.read().replace('\n', '').split(' ')
             # body = txt_file.read().split(' ')
             body = list(filter(lambda t: t != '' and t != '-', body))  # remove single spaces and single hyphens
@@ -77,6 +75,13 @@ def index_file(file_name, documentID, index):
 
 
 def train_rocchio(class_list, docs, name):
+    """
+    Trains the class given list of documents to look at
+    :param class_list: List of docs, these files are the ones that get associated with the class
+    :param docs: Map of <doc : <term : score>>
+    :param name: The class that is getting trained, associated with a global map of that classes centroid
+    :return:
+    """
     if name == 'hamilton':
         vec = ham_vector
     elif name == 'madison':
@@ -100,6 +105,11 @@ def train_rocchio(class_list, docs, name):
 
 
 def apply_rocchio(disputed_file):
+    """
+
+    :param disputed_file:
+    :return:
+    """
     scores = [0.0, 0.0, 0.0]  # Hamilton, Madison, and Jay respectively
     disputed_index = doc_wdt[disputed_file]
 
@@ -126,8 +136,8 @@ def apply_rocchio(disputed_file):
     scores[2] = sqrt(sum_vec)
 
     if disputed_file == 'paper_52.txt':
-        print('Euclidians distance between the normalized vector for the document and each of the 3 class centroids')
-        print('Hamilton {0} | Madison {1} | Jay {2}'.format(scores[0], scores[1], scores[2]))
+        print('\nEuclidians distance between the normalized vector for the document and each of the 3 class centroids')
+        print('Hamilton {0} | Madison {1} | Jay {2}\n'.format(scores[0], scores[1], scores[2]))
 
     if scores[0] < scores[1] and scores[0] < scores[2]:
         print('{0} was written by Hamilton'.format(disputed_file))
@@ -150,10 +160,17 @@ def get_first_thirty(index, values=False):
         elif counter <= 30:
             print(counter, i)
         counter += 1
+    print('\n')
+
 
 def get_list_files(directory):
+    """
+    Gets a list of files in a given directory sorted by their document number since python does not do this sort of
+    thing natively, probably something to do with the OS.
+    :param directory:
+    :return: List of docs in sorted order
+    """
     file_names = []  # Names of files
-    chdir(directory)
     sorted_files = sorted(listdir(directory), key=lambda x: (int(re.sub('\D', '', x)), x))
     for file in sorted_files:
         if file.endswith('.txt'):
@@ -162,29 +179,23 @@ def get_list_files(directory):
 
 
 def init(directory, index):
-    file_names = []  # Names of files
-    chdir(directory)
-    sorted_files = sorted(listdir(directory), key=lambda x: (int(re.sub('\D', '', x)), x))
-
-    for file in sorted_files:
-        if file.endswith('.txt'):
-            file_names.append(str(file))
-
+    # file_names = []
+    file_names = get_list_files(directory)
 
     # Index each file and mark its Document ID
     for file in file_names:
-        index_file(file, int(re.findall(r'\d+', file)[0]), index)
+        index_file(directory, file, int(re.findall(r'\d+', file)[0]), index)
 
 
 def main():
-    # Federalist papers n shit
-    all_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/ALL'
+    # Federalist papers n shit, all of them
+    all_files = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/ALL/'
     init(all_files, all_docs_index)
 
-    jay_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/JAY')
-    hamilton_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/HAMILTON')
-    madison_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/MADISON')
-    disputed_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/DISPUTED')
+    jay_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/JAY/')
+    hamilton_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/HAMILTON/')
+    madison_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/MADISON/')
+    disputed_files = get_list_files('/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/DISPUTED/')
 
     print('First thirty terms in the index')
     get_first_thirty(all_docs_index.get_index())

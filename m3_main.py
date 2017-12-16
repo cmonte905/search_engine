@@ -27,9 +27,10 @@ r_ham_vector = {}
 r_mad_vector = {}
 r_jay_vector = {}
 
+# p(t | c)
 ptc_map = {}  # {term : {class: ptc }}
 
-# Bayesian ptc
+# Bayesian ptc vars
 b_ham_freq_vector = {}
 b_mad_freq_vector = {}
 b_jay_freq_vector = {}
@@ -92,10 +93,13 @@ def index_file(directory, file_name, documentID, index):
         length += score_map[tf]**2
 
     doc_wdt[file_name] = score_map
-    # # Things to turn in for Neal
+    # Things to turn in for Neal, it's just the easiest place to put this
     if file_name == 'paper_52.txt':
         print('First 30 components of document 52')
         get_first_thirty(score_map, True)
+
+# ----------------------------------------------------------------------------------------------------------------
+# Rocchio stuff - Got too lazy to put into separate classes like a good software engineer
 
 
 def train_rocchio(class_list, docs, name):
@@ -185,6 +189,11 @@ def get_first_thirty(index, values=False):
             print(counter, i)
         counter += 1
     print('\n')
+
+# End of Rocchio stuff
+
+# ----------------------------------------------------------------------------------------------------------------
+# Bayesian stuff
 
 
 def bayesian_apply(disputed_file, class_lists):
@@ -338,6 +347,9 @@ def generate_feature_vector(t_list, class_doc_list, class_name, vec):
         else:
             ptc_map[i].update({class_name: ptc})
 
+# End of Bayesian
+# ----------------------------------------------------------------------------------------------------------------
+
 
 def get_list_files(directory):
     """
@@ -400,7 +412,7 @@ def main():
         bayesian_apply(d, all_class_dirs)
 
     print('\nUsing 50 top terms')
-    discrimate_terms_list = bayesian_init(50, term_list, all_class_dirs, True)
+    discrimate_terms_list = bayesian_init(50, term_list, all_class_dirs)
     generate_feature_vector(discrimate_terms_list, jay_files, 'jay', b_jay_freq_vector)
     generate_feature_vector(discrimate_terms_list, hamilton_files, 'hamilton', b_ham_freq_vector)
     generate_feature_vector(discrimate_terms_list, madison_files, 'madison', b_mad_freq_vector)

@@ -1,49 +1,61 @@
-from os import path, chdir, listdir, getcwd
+from os import listdir
 from math import log, sqrt, pow
-import json
 import string
-import pprint
 import re
-import unidecode
 
 # Custom Classes
 from positional_inverted_index import positional_inverted_index
-from index_writer import index_writer
-from kgram_index import kgram_index
-from rank import rank
-from query import Query
 
 # Porter 2 Stemmer
 from porter2stemmer import Porter2Stemmer
-import time
+
 
 # The Index
 # { index[term] : [<ID, [p1, p2,... pk]>, <ID, [p1, p2,... pk]>, ...] }
-index = positional_inverted_index()
+all_docs_index = positional_inverted_index()
+doc_wdt = {}
+doc_total_tf = {}
+
+ALL_DIR = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/ALL/'
+JAY_DIR = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/JAY/'
+HAMILTON_DIR = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/HAMILTON/'
+MADISON_DIR = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/MADISON/'
+DISPUTED_DIR = '/Users/Cemo/Documents/cecs429/search_engine/federalist-papers/DISPUTED/'
+
+# Rocchio vectors/centroids
+r_ham_vector = {}
+r_mad_vector = {}
+r_jay_vector = {}
+
+# p(t | c)
+ptc_map = {}  # {term : {class: ptc }}
+
+# Bayesian ptc vars
+b_ham_freq_vector = {}
+b_mad_freq_vector = {}
+b_jay_freq_vector = {}
+
+author_term_map = {}
 
 # List of vocab tokens for terms in the corpus
-# Dictionary <String : Set<String>>
-avg_doc_length = 0
+# Dictionary <String : List[String]>
 
 
-# Use this index_file for .json files
-def index_file(file_name, documentID):
+def index_file(directory, file_name, documentID, index):
     stemmer = Porter2Stemmer()
-    k = kgram_index()
-
     # Dealing with punctuation
     p = dict.fromkeys(string.punctuation)
     p.pop('-')  # we need to deal with hyphens
-    punctuation = str.maketrans(p)
     weight_map = {}
 
     try:
-        with open(file_name) as json_file:
-            article_data = json.load(json_file)
-            body = unidecode.unidecode(article_data['body']).lower().translate(punctuation).split(' ')
-            body = list(filter(lambda t: t != '' and t != '-', body)) # remove single spaces and single hyphens
+        with open(directory + file_name) as txt_file:
+            # Trying to normalize the vocab, getting rid of non alphanumeric,
+            body = txt_file.read().replace('\n', '').lower()
+            body = re.sub(r'[^A-Za-z0-9#]+', ' ', body)
+            body = body.split(' ')  # Gets rid of any \n that appear in the text
 
-            #kgram stuff here
+            body = list(filter(lambda t: t != '' and t != '-', body))  # remove single spaces and single hyphens
 
             position = 0
             for term in body:
@@ -53,7 +65,7 @@ def index_file(file_name, documentID):
                     index.add_term(stemmer.stem(unhyphenated_word), documentID, position)
                     hyphened_tokens = term.split('-')
                     for t in hyphened_tokens:
-                        index.add_term(stemmer.stem(t), documentID, position)
+                        all_docs_index.add_term(stemmer.stem(t), documentID, position)
                 else:
                     index.add_term(stemmer.stem(term), documentID, position)
                 position += 1
@@ -65,125 +77,350 @@ def index_file(file_name, documentID):
     except FileNotFoundError as e:
         print(e)
 
+    doc_total_tf[file_name] = weight_map  # given a document, it will return a map of that docs tf
+
+    score_map = {}
     wdt = 0
-    i_writer = index_writer()
     # Gets the Wdt's of the terms in the file
     for tf in weight_map:
-        wdt += pow(1 + log(weight_map[tf]), 2)
+        score = pow(1 + log(weight_map[tf]), 2)
+        score_map[tf] = score
+        wdt += score**2
     Ld = sqrt(wdt)
-    i_writer.write_ld(Ld)
+    length = 0
+    for tf in score_map:
+        score_map[tf] = score_map[tf]/Ld
+        length += score_map[tf]**2
+
+    doc_wdt[file_name] = score_map
+    # Things to turn in for Neal, it's just the easiest place to put this
+    if file_name == 'paper_52.txt':
+        print('First 30 components of document 52')
+        get_first_thirty(score_map, True)
+
+# ----------------------------------------------------------------------------------------------------------------
+# Rocchio stuff - Got too lazy to put into separate classes like a good software engineer
 
 
-# If the user selects a certain document, for displaying the original content
-def open_file_content(file_name):
-    with open(file_name, 'r') as json_file:
-        article_data = json.load(json_file)
-        print(article_data['title'] + '\n')
-        print (article_data['body'] + '\n')
-        print (article_data['url'] + '\n')
+def train_rocchio(class_list, docs, name):
+    """
+    Trains the class given list of documents to look at
+    :param class_list: List of docs, these files are the ones that get associated with the class
+    :param docs: Map of <doc : <term : score>>
+    :param name: The class that is getting trained, associated with a global map of that classes centroid
+    :return:
+    """
+    if name == 'hamilton':
+        vec = r_ham_vector
+    elif name == 'madison':
+        vec = r_mad_vector
+    else:
+        vec = r_jay_vector
+
+    for i in docs:
+        if i in class_list:
+            inner_map = docs[i]
+            for j in inner_map:
+                if j not in vec:
+                    vec[j] = inner_map[j]
+                else:
+                    vec[j] = vec[j] + inner_map[j]
+
+    for i in vec:
+        vec[i] = vec[i]/len(class_list)
+    print('\nFirst thirty values of centroid {}'. format(name))
+    get_first_thirty(vec, True)
 
 
+def apply_rocchio(disputed_file):
+    """
 
-def document_parser(id):
-    return str('json' + str(id) + '.json')
+    :param disputed_file:
+    :return:
+    """
+    scores = [0.0, 0.0, 0.0]  # Hamilton, Madison, and Jay respectively
+    disputed_index = doc_wdt[disputed_file]
+
+    sum_vec = 0.0
+    for i in disputed_index:
+        if i in r_ham_vector:
+            sum_vec += pow(r_ham_vector[i] - disputed_index[i], 2)
+        else:
+            sum_vec += pow(disputed_index[i], 2)
+    scores[0] = sqrt(sum_vec)
+    sum_vec = 0.0
+    for i in disputed_index:
+        if i in r_mad_vector:
+            sum_vec += pow(r_mad_vector[i] - disputed_index[i], 2)
+        else:
+            sum_vec += pow(disputed_index[i], 2)
+    scores[1] = sqrt(sum_vec)
+    sum_vec = 0.0
+    for i in disputed_index:
+        if i in r_jay_vector:
+            sum_vec += pow(r_jay_vector[i] - disputed_index[i], 2)
+        else:
+            sum_vec += pow(disputed_index[i], 2)
+    scores[2] = sqrt(sum_vec)
+
+    if disputed_file == 'paper_52.txt':
+        print('\nEuclidians distance between the normalized vector for the document and each of the 3 class centroids')
+        print('Hamilton {0} | Madison {1} | Jay {2}\n'.format(scores[0], scores[1], scores[2]))
+
+    if scores[0] < scores[1] and scores[0] < scores[2]:
+        print('{0} was written by Hamilton'.format(disputed_file))
+    elif scores[1] < scores[0] and scores[1] < scores[2]:
+        print('{0} was written by Madison'.format(disputed_file))
+    else:
+        print('{0} was written by Jay'.format(disputed_file))
 
 
-def init(directory):
+def get_first_thirty(index, values=False):
+    """
+    Gets the first thirty words in the vocabulary for turn in for Rocchio
+    :param index: A map to use to print out
+    :param values: Option to print values if needed
+    """
+    counter = 1
+    for i, j in sorted(index.items()):
+        if counter <= 30 and values:
+            print(counter, i, ':', j)
+        elif counter <= 30:
+            print(counter, i)
+        counter += 1
+    print('\n')
+
+# End of Rocchio stuff
+
+# ----------------------------------------------------------------------------------------------------------------
+# Bayesian stuff
+
+
+def bayesian_apply(disputed_file, class_lists):
+    scores = []
+    disputed_term_map = doc_total_tf[disputed_file]
+    for c in range(3):  # Classes are Jay, Hamilton and Madison
+        if c == 0:
+            class_name = 'jay'
+        elif c == 1:
+            class_name = 'hamilton'
+        else:
+            class_name = 'madison'
+        prob_of_t_in_c = 0
+        prob_of_c = log(len(class_lists[c]) / len(get_list_files(ALL_DIR)), 2)
+        for d in disputed_term_map:
+            if d in ptc_map:
+                prob_of_t_in_c += ptc_map[d][class_name]
+
+        if prob_of_t_in_c == 0:
+            score = prob_of_c
+        else:
+            score = prob_of_c + log(prob_of_t_in_c, 2)
+
+        scores.append(score)
+    if disputed_file == 'paper_49.txt':
+        print('Jay score : {0} | Hamilton score : {1} | Madison score {2}'.format(scores[0], scores[1], scores[2]))
+
+    if scores[1] > scores[0] and scores[1] > scores[2]:
+        print('Given Bayesian : {0} is written by Hamilton'.format(disputed_file))
+    elif scores[2] > scores[0] and scores[2] > scores[1]:
+        print('Given Bayesian : {0} is written by Madison'.format(disputed_file))
+    elif scores[0] > scores[1] and scores[0] > scores[2]:
+        print('Given Bayesian : {0} is written by Jay'.format(disputed_file))
+
+
+def calculate_itc(term, class_files):
+    N = len(get_list_files(ALL_DIR))  # corpus size
+    N11 = 0  # Number of docs that is part of the class and contains the term
+    for docs in class_files:  # gets
+        # print('class files', docs)
+        if docs in doc_total_tf:
+            if term in doc_total_tf[docs]:
+                N11 += 1
+    N1x = N11  # Number of documents that contain the the word
+    for docs in doc_total_tf:
+        if docs not in class_files:
+            N1x += 1
+    Nx1 = len(class_files)
+    Nx0 = N - Nx1  # Number of documents not in the class
+    N0x = N - N1x  # Number of documents that not contain the term
+    N01 = Nx1 - N11
+    N10 = N1x - N11
+    N00 = Nx0 - N10
+
+    n1 = (N11 / N) * itc_helper((N * N11), (N1x * Nx1))
+    n2 = (N10 / N) * itc_helper((N * N10), (N1x * Nx0))
+    n3 = (N01 / N) * itc_helper((N * N01), (N0x * Nx1))
+    n4 = (N00 / N) * itc_helper((N * N00), (N0x * Nx0))
+
+    return n1 + n2 + n3 + n4
+
+
+def itc_helper(a, b):
+    if a * b == 0:
+        return 0
+    return log((a/b), 2)
+
+
+def get_max_itc(term, classes_dirs):
+    counter = 0
+    class_name = 0
+    max_itc = 0
+    for i in classes_dirs:
+        itc_value = calculate_itc(term, i)
+        if max_itc < itc_value:
+            max_itc = itc_value
+            class_name = counter
+        counter += 1
+
+    author_term_map[term] = class_name
+    return max_itc
+
+
+def bayesian_init(disc_len, vocab, classes_dirs, ten=False):
+    """
+    Gets back the top k terms
+    :param disc_len: Number of discrete terms wanted
+    :param vocab: All terms in the corpus's vocab
+    :param classes_dirs: List of directory lists
+    :param ten:  If its true, print out the first ten I(T|C) scores and the docs
+    :return:
+    """
+    discrimiate_list = []
+    itc_map = {}
+    itc_value_list = []
+
+    for term in vocab:
+        itc_value = get_max_itc(term, classes_dirs)
+
+        if itc_value in itc_map:
+            itc_map[itc_value].append(term)
+        else:
+            itc_map[itc_value] = [term]
+
+        if itc_value not in itc_value_list:
+            itc_value_list.append(itc_value)
+
+    for val in sorted(itc_value_list, reverse=True):
+        for term in itc_map[val]:
+            if ten:
+                print('Term: {0} | I(T,C): {1}'.format(term, val))
+            discrimiate_list.append(term)
+            if len(discrimiate_list) == disc_len:
+                return discrimiate_list
+
+
+def calc_ptc(class_vec, term, term_size, sum_ftc):
+    if term not in class_vec:
+        numerator = 1  # Numerator
+    else:
+        numerator = 1 + class_vec[term]  # Numerator
+    denomator = sum_ftc + term_size   # Denomator
+    return numerator/denomator
+
+
+def generate_feature_vector(t_list, class_doc_list, class_name, vec):
+    """
+    Pass in class doc list, it will get the term frequencies of those docs
+    :param t_list:
+    :param class_doc_list: Class document list, documents that pertain to a class
+    :param class_name:
+    :param vec : Class frequency vector
+    :return:
+    """
+    sum_ftc = 0  # Σ of all terms frequencies in a class
+    sum_map = {}  # <class, sum of ftc> Inner map of ptc map, key is word
+    for i in class_doc_list:  # Goes through every document that belongs to a class
+        if i in doc_total_tf:  # if key is in class's document list
+            for term in doc_total_tf[i]:  # Document's term frequencies
+                if term not in vec:
+                    vec[term] = doc_total_tf[i][term]
+                else:
+                    vec[term] = vec[term] + doc_total_tf[i][term]
+                sum_ftc += doc_total_tf[i][term]  # Value of that documents term frequencies
+    sum_map[class_name] = sum_ftc
+
+    for i in t_list:
+        ptc = calc_ptc(vec, i, len(t_list), sum_ftc)
+        if i not in ptc_map:
+            ptc_map[i] = {class_name: ptc}
+        else:
+            ptc_map[i].update({class_name: ptc})
+
+# End of Bayesian
+# ----------------------------------------------------------------------------------------------------------------
+
+
+def get_list_files(directory):
+    """
+    Gets a list of files in a given directory sorted by their document number since python does not do this sort of
+    thing natively, probably something to do with the OS.
+    :param directory:
+    :return: List of docs in sorted order
+    """
     file_names = []  # Names of files
-    index.clean()
-    vocab = {}
-    chdir(directory)
     sorted_files = sorted(listdir(directory), key=lambda x: (int(re.sub('\D', '', x)), x))
-
     for file in sorted_files:
-        if file.endswith('.json'):
+        if file.endswith('.txt'):
             file_names.append(str(file))
+    return file_names
+
+
+def init(directory, index):
+    # file_names = []
+    file_names = get_list_files(directory)
 
     # Index each file and mark its Document ID
     for file in file_names:
-        index_file(file, int(re.findall(r'\d+', file)[0]))
+        index_file(directory, file, int(re.findall(r'\d+', file)[0]), index)
 
 
 def main():
-    # Instances
-    # directory = input('Enter directory for index: ')  # TODO Revert back to original when done
+    # Federalist papers n shit, all of them
+    jay_files = get_list_files(JAY_DIR)
+    hamilton_files = get_list_files(HAMILTON_DIR)
+    madison_files = get_list_files(MADISON_DIR)
+    disputed_files = get_list_files(DISPUTED_DIR)
 
-    # TODO This is for testing purposes, so i can compare output
-    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/mlb_documents'
-    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/kumin'
-    # test_dir = '/Users/Cemo/Documents/cecs429/search_engine/corpus/disk_test'
+    init(ALL_DIR, all_docs_index)
 
-    cwd = getcwd()
-    start_time = time.time()
+    # -----------------------------------------------------------------------------------------------------------------
+    # Rocchio Classification
 
-    corpus_size = len(listdir('/Users/Cemo/Documents/cecs429/search_engine/corpus/all-nps-sites'))
+    print('First thirty terms in the index')
+    get_first_thirty(all_docs_index.get_index())
 
-    # init(test_dir)
-    print("--- %s seconds ---" % str((time.time() - start_time) / 60))
+    train_rocchio(hamilton_files, doc_wdt, 'hamilton')
+    train_rocchio(madison_files, doc_wdt, 'madison')
+    train_rocchio(jay_files, doc_wdt, 'jay')
 
-    while 1:
-        chdir(cwd)  # Changing to the directory of with the DB file in it for sqlite
-        query_or_index = input('[1] - Query\n[2] - Index\n')
-        print(query_or_index)
-        if query_or_index == '1':
+    for i in disputed_files:
+        apply_rocchio(i)
 
-            query_type = input('[1] - Rank\n[2] - Boolean\n')
-            if query_type == '1':
-                r = rank()
-                q = input('Enter query: ')
-                r.get_rank(q, corpus_size)
-                # print(r.get_rank(q, corpus_size))
+    # -----------------------------------------------------------------------------------------------------------------
+    # Bayesian Classification
+    term_list = sorted(list(all_docs_index.get_index()))  # List of all terms in the corpus vocabulary
+    all_class_dirs = [jay_files, hamilton_files, madison_files]
 
-                # print(r.get_rank('wildfire in yosemite', corpus_size))
-            else:
-                return_docs = []
+    print('\nUsing 10 top terms')
+    discrimate_terms_list = bayesian_init(10, term_list, all_class_dirs, True)
+    generate_feature_vector(discrimate_terms_list, jay_files, 'jay', b_jay_freq_vector)
+    generate_feature_vector(discrimate_terms_list, hamilton_files, 'hamilton', b_ham_freq_vector)
+    generate_feature_vector(discrimate_terms_list, madison_files, 'madison', b_mad_freq_vector)
 
-                user_string = input("Please enter a word search:\n")
-                # Special Queries
-                if ':' in user_string:
-                    if ':q' in user_string:
-                        exit()
-                    if ':stem' in user_string:
-                        stemmer = Porter2Stemmer()
-                        print("Will be stemming the token")
-                        print(user_string.split(" ")[1])
-                        print(stemmer.stem(user_string.split(" ")[1]))
-                    if ':index' in user_string:
-                        print('Will be indexing folder')
-                        init(user_string.split(" ")[1].rstrip().lstrip())
-                    if ':vocab' in user_string:
-                        pp = pprint.PrettyPrinter(indent=4)
-                        pp.pprint(index.get_dictionary())
-                        print('Total number of vocabulary terms: ' + str(index.get_term_count()))
-                        print('Will be spitting out words')
-                else:
-                    if user_string:
-                        q = Query()
-                        return_docs = q.query_parser(user_string)
-                    else:
-                        print('No query entered')
+    for d in disputed_files:
+        bayesian_apply(d, all_class_dirs)
 
-                print('DOC_LIST: ' + str(return_docs))
+    print('\nUsing 50 top terms')
+    discrimate_terms_list = bayesian_init(50, term_list, all_class_dirs)
+    generate_feature_vector(discrimate_terms_list, jay_files, 'jay', b_jay_freq_vector)
+    generate_feature_vector(discrimate_terms_list, hamilton_files, 'hamilton', b_ham_freq_vector)
+    generate_feature_vector(discrimate_terms_list, madison_files, 'madison', b_mad_freq_vector)
 
-                # Allow the user to select a document to view
-                doc_list = list(map(document_parser, return_docs))
-                if len(doc_list) != 0:
-                    for document in doc_list:
-                        print ('Document ' + document)
-                    print ('Documents found: ' + str(len(doc_list)))
-                    document_selection = input('Please select a document you would like to view: ')
-                    while document_selection != 'no':
-                        if document_selection in doc_list:
-                            open_file_content(document_selection)
-                        document_selection = input('Please select a document you would like to view: ')
-                else:
-                    print ('No documents were found')
-        else:
-            print('Please dont')
-            directory = input('Enter directory for index: ')  # TODO Revert back to original when done
-            init(directory)
-            i_writer = index_writer()
-            i_writer.write_index_to_disk(index.get_index())
+    for d in disputed_files:
+        bayesian_apply(d, all_class_dirs)
+
+    # -----------------------------------------------------------------------------------------------------------------
 
 
 if __name__ == "__main__":

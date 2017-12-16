@@ -3,8 +3,15 @@ Main project for Professor Neal "NealDT" Terrell at CSULB, class CECS 429. Writt
 
 ## TODO 
 
-## WE DONE FUCKED UP, HAVE TO MAKE THIS SHIT GO FASTER!!!!!
-#### Requirements:
+## Need to start to work on this shit
+
+#### Milestone 3 
+Requirement | Description | Status | Person Responsible
+-----|-----|-----|-----|
+Rocchio | Look at the project paper | In progress | Cesar 
+Baye | Look at the project paper | In progress | Stan 
+
+#### Requirements: This shit Is done for the moment 
 Requirement | Description | Status | Person Responsible
 -----|-----|-----|-----|
 Corpus | Parse out json file into individual files| Done | Juan 

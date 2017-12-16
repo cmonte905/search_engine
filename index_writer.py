@@ -13,11 +13,11 @@ class index_writer():
         """
         stem = Porter2Stemmer()
         vb = vbe()
-        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/term_positions.db')
+        position_term_db = position_db('/Users/Cemo/Documents/cecs429/search_engine/DB/term_positions_federalists.db')
         position_term_db.create_table()
         current_index = index
         sorted_key_list = sorted(index)
-        index_binary_file = open('index.bin', 'wb')
+        index_binary_file = open('index_federalists.bin', 'wb')
 
         for key in sorted_key_list:
             if not key:
@@ -63,6 +63,6 @@ class index_writer():
         index_binary_file.close()
 
     def write_ld(self, Ld):
-        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights.bin', 'ab')
+        ld_doc = open('/Users/Cemo/Documents/cecs429/search_engine/docWeights_federalists.bin', 'ab')
         ld_doc.write(pack('d', Ld))
         ld_doc.close()

@@ -1,15 +1,19 @@
 # Search Engine project 
 Main project for Professor Neal "NealDT" Terrell at CSULB, class CECS 429. Written in Python  3 
 
-## TODO 
+## Done - Code commits have swearing and jokes in them due to to frustration, please ignore
 
-## Need to start to work on this shit
+
 
 #### Milestone 3 
 Requirement | Description | Status | Person Responsible
 -----|-----|-----|-----|
 Rocchio | Look at the project paper | In progress | Cesar 
 Baye | Look at the project paper | In progress | Stan 
+
+
+#### Milestone 2
+Milestone is a bit fuzzy, do not really remember how it got done, only that it did, with the aid of a lot of caffiene(?)
 
 #### Requirements: This shit Is done for the moment 
 Requirement | Description | Status | Person Responsible
